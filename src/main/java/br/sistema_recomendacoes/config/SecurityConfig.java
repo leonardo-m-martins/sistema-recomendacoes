@@ -1,4 +1,4 @@
-package br.sistema_recomendacoes;
+package br.sistema_recomendacoes.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

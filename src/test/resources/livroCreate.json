@@ -1,0 +1,12 @@
+{
+    "titulo": "Neuromancer",
+    "ano": 1984,
+    "autor": "William Gibson",
+    "pais_origem": "Estados Unidos",
+    "descricao": "Um marco do cyberpunk.",
+    "capa": "https://link-da-imagem.com/capa.jpg",
+    "paginas": 271,
+    "editora": "Ace Books",
+    "generos": ["Ficção Científica", "Cyberpunk"]
+  }
+  

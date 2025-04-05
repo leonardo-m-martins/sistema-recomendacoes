@@ -1,6 +1,6 @@
 # Sistema de Recomendação de Livros e Filmes  
 
-Este é um sistema de recomendação que sugere livros e filmes similares ao conteúdo no histórico do usuário, e obras bem avaliadas por outros usuários que consomem obras semelhantes. 
+Este é um sistema de recomendação que sugere livros similares aos livros no histórico do usuário, e livros bem avaliados por outros usuários que leem livros semelhantes. 
 
 ## Tecnolgias Utilizadas:
 - Java 21

@@ -1,7 +1,6 @@
 HELP.md
 .env
 java21.bat
-.mvn/
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/

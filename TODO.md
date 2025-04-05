@@ -9,14 +9,19 @@
 
 ## Java
 
-- [ ] Projeto Java configurado e pronto para desenvolvimento
-- [ ] Entidades e repositórios implementados
-- [ ] API funcional para operações básicas
+- [x] Projeto Java configurado e pronto para desenvolvimento
+- [x] Entidades e repositórios implementados
+- [x] API funcional para operações básicas
+  - [x] Read all
+  - [x] Read by id
+  - [x] Create
+  - [x] Delete
+  - [x] Update
 
 ## API
 
-- [ ] API configurada e conectada ao banco.
-- [ ] Endpoints básicos funcionando.
+- [x] API configurada e conectada ao banco.
+- [x] Endpoints básicos funcionando.
 - [ ] API protegida com autenticação JWT.
 
 ## Front end/Design
