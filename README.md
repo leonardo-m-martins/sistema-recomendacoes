@@ -113,9 +113,7 @@ recomendações.
 
 ## Autenticação
 
-- Tipo: **Bearer Token**
-- Header:  
-  `Authorization: Bearer <seu_token_aqui>`
+**Ainda não implementada.**
 
 ---
 
