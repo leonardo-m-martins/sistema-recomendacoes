@@ -87,6 +87,7 @@ recomendações.
 		- [DELETE /livro/{id}](#delete-livroid)
 		- [GET /usuario/](#get-usuario)
 		- [POST /usuario/](#post-usuario)
+		- [GET /usuario/{id}](#get-usuarioid)
 		- [PUT /usuario/{id}](#put-usuarioid)
 		- [PATCH /usuario/{id}](#patch-usuarioid)
 		- [DELETE /usuario/{id}](#delete-usuarioid)
@@ -563,6 +564,26 @@ curl --request POST \
 	"nome": "Jonas",
 	"senha": "12345"
 }
+```
+
+**Resposta:**
+``` json
+{
+	"id": 1,
+	"nome": "Jonas"
+}
+```
+
+### GET /usuario/{id}
+
+**Descrição:** Retorna um usuário a partir do ID.
+
+**Requisição:**
+``` bash
+curl --request GET \
+  --url http://localhost:8080/api/usuario/1 \
+  --header 'Content-Type: application/json' \
+  --header 'User-Agent: insomnia/11.0.2' \
 ```
 
 **Resposta:**
