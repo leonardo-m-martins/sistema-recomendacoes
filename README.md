@@ -567,7 +567,10 @@ curl --request POST \
 
 **Resposta:**
 ``` json
-	// TODO: adicionar
+{
+	"id": 1,
+	"nome": "Jonas"
+}
 ```
 
 ### PUT /usuario/{id}
