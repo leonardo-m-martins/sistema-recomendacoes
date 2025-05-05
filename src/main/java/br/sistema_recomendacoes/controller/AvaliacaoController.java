@@ -57,13 +57,13 @@ public class AvaliacaoController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/livro")
-    public @ResponseBody ResponseEntity<Double> calcAverage(@RequestParam Integer id){
-        Double avaliacaoAverage = avaliacaoService.calcAverageWithQuery(id);
+    @GetMapping("/livro-media/{id}")
+    public @ResponseBody ResponseEntity<Double> calcAverage(@PathVariable Integer livro_id){
+        Double avaliacaoAverage = avaliacaoService.calcAverageWithQuery(livro_id);
         return ResponseEntity.ok().body(avaliacaoAverage);
     }
 
-    @GetMapping("/L-U")
+    @GetMapping("/livro-usuario")
     public @ResponseBody ResponseEntity<AvaliacaoResponseDTO> findByLivroAndUsuario(@RequestParam Integer livro_id, 
                                                          @RequestParam Integer usuario_id){
         AvaliacaoResponseDTO salvo = avaliacaoService.findByLivroAndUsuario(livro_id, usuario_id);

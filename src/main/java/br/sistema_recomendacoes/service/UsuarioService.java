@@ -1,22 +1,32 @@
 package br.sistema_recomendacoes.service;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import br.sistema_recomendacoes.dto.UsuarioRequestDTO;
 import br.sistema_recomendacoes.dto.UsuarioResponseDTO;
+import br.sistema_recomendacoes.exception.ResourceNotFoundException;
 import br.sistema_recomendacoes.mapper.UsuarioMapper;
+import br.sistema_recomendacoes.model.Avaliacao;
 import br.sistema_recomendacoes.model.Usuario;
+import br.sistema_recomendacoes.model.VetorLivro;
 import br.sistema_recomendacoes.repository.UsuarioRepository;
+import br.sistema_recomendacoes.util.PatchHelper;
 
 @Service
 public class UsuarioService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private AvaliacaoService avaliacaoService;
 
     // create
     public UsuarioResponseDTO add(UsuarioRequestDTO requestDTO) {
@@ -37,7 +47,7 @@ public class UsuarioService {
 
     // read
     public UsuarioResponseDTO findByIdDto(Integer id){
-        Usuario usuario = usuarioRepository.findById((long) id).orElseThrow();
+        Usuario usuario = findById(id);
         return UsuarioMapper.toResponseDTO(usuario);
     }
 
@@ -65,6 +75,24 @@ public class UsuarioService {
     }
 
     private Usuario findById(Integer id){
-        return usuarioRepository.findById((long) id).orElseThrow();
+        return usuarioRepository.findById((long) id).orElseThrow( () -> new ResourceNotFoundException("Usuário (id: " + id + ") não encontrado."));
+    }
+
+    @Transactional
+    public Map<Integer, VetorLivro> getHistorico(Integer id_usuario, int MAXPAGINAS, int MINANO, int MAXANO){
+        Map<Integer, VetorLivro> historico = new HashMap<>();
+        Iterable<Avaliacao> avaliacaos = avaliacaoService.findByUsuario_id(id_usuario);
+        for (Avaliacao avaliacao : avaliacaos) {
+            historico.put(avaliacao.getNotaOrPadrao(), new VetorLivro(avaliacao.getLivro(), MAXPAGINAS, MINANO, MAXANO));
+        }
+        return historico;
+    }
+
+    public int count(){
+        return (int) usuarioRepository.count();
+    }
+
+    public List<Usuario> findAllList(){
+        return usuarioRepository.findAll();
     }
 }

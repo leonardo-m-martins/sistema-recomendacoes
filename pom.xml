@@ -94,6 +94,12 @@
 			<artifactId>mysql</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>it.unimi.dsi</groupId>
+			<artifactId>fastutil</artifactId>
+			<version>8.5.9</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>

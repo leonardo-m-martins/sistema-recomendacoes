@@ -7,6 +7,6 @@ import lombok.AllArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class GeneroRequestDTO {
+public class AutorRequestDTO {
     private String nome;
 }

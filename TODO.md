@@ -17,6 +17,10 @@
   - [x] Create
   - [x] Delete
   - [x] Update
+- [ ] Implementar lógica de recomendação
+  - [ ] Vetorização dos livros
+  - [ ] Vetorização de usuários
+  - [ ] Similaridade cosseno
 
 ## API
 

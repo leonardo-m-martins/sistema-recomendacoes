@@ -1,5 +1,6 @@
 package br.sistema_recomendacoes.controller;
 
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -62,5 +63,11 @@ public class LivroController {
     public @ResponseBody ResponseEntity<Void> delete(@PathVariable Integer id){
         livroService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping(value = "/jsonl", consumes = "application/jsonl")
+    public @ResponseBody ResponseEntity<Void> addFromJSONL(InputStream inputStream){
+        livroService.addFromJSONL(inputStream);
+        return ResponseEntity.ok().build();
     }
 }

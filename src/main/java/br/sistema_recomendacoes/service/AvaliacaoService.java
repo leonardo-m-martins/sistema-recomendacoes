@@ -2,15 +2,18 @@ package br.sistema_recomendacoes.service;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import br.sistema_recomendacoes.dto.AvaliacaoRequestDTO;
 import br.sistema_recomendacoes.dto.AvaliacaoResponseDTO;
+import br.sistema_recomendacoes.exception.ResourceNotFoundException;
 import br.sistema_recomendacoes.mapper.AvaliacaoMapper;
 import br.sistema_recomendacoes.model.Avaliacao;
 import br.sistema_recomendacoes.repository.AvaliacaoRepository;
+import br.sistema_recomendacoes.util.PatchHelper;
 
 @Service
 public class AvaliacaoService {
@@ -23,16 +26,16 @@ public class AvaliacaoService {
     }
 
     public AvaliacaoResponseDTO findByLivroAndUsuario(Integer livro_id, Integer usuario_id){
-        Avaliacao avaliacao = avaliacaoRepository.findByLivroAndUsuario(livro_id, usuario_id).orElseThrow(); // TODO: adiconar tratamento de erro
+        Avaliacao avaliacao = avaliacaoRepository.findByLivroAndUsuario(livro_id, usuario_id).orElseThrow( () -> new ResourceNotFoundException("Avaliação (livro_id: " + livro_id + ", usuario_id: " + usuario_id + ") não encontrado."));
         return AvaliacaoMapper.toResponseDTO(avaliacao);
     }
 
     private Avaliacao findById(Integer id){
-        return avaliacaoRepository.findById((long) id).orElseThrow();
+        return avaliacaoRepository.findById((long) id).orElseThrow( () -> new ResourceNotFoundException("Avaliação (id: " + id + ") não encontrado."));
     }
 
     public AvaliacaoResponseDTO findByIdDto(Integer id){
-        Avaliacao avaliacao = avaliacaoRepository.findById((long) id).orElseThrow();
+        Avaliacao avaliacao = findById(id);
         return AvaliacaoMapper.toResponseDTO(avaliacao);
     }
 
@@ -73,5 +76,13 @@ public class AvaliacaoService {
     public void delete(Integer id){
         Avaliacao avaliacao = findById(id);
         avaliacaoRepository.delete(avaliacao);
+    }
+
+    public Iterable<Avaliacao> findByUsuario_id(Integer usuario_id){
+        return avaliacaoRepository.findByUsuario_id(usuario_id);
+    }
+
+    public Set<Integer> findLivro_idByUsuario_id(Integer usuario_id){
+        return avaliacaoRepository.findLivro_idByUsuario_id(usuario_id);
     }
 }

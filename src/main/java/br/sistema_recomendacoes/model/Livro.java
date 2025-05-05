@@ -15,11 +15,17 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "livro")
 public class Livro {
@@ -28,8 +34,9 @@ public class Livro {
     private Integer id;
 
     private String titulo;
-    private String pais_origem;
-    private Short ano;
+    private String subtitulo;
+    private Short primeira_data_publicacao;
+    private Short data_publicacao;
 
     @Column(columnDefinition = "TEXT")
     private String descricao;
@@ -37,7 +44,6 @@ public class Livro {
     @Column(length = 500)
     private String capa;
 
-    private String autor;
     private Integer paginas;
     private String editora;
 
@@ -50,21 +56,15 @@ public class Livro {
     //@JsonIgnore
     private List<Genero> generos;
 
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+        name = "livro_autor",  // nome da tabela intermediária
+        joinColumns = @JoinColumn(name = "livro_id"),  // coluna que se refere à Obra
+        inverseJoinColumns = @JoinColumn(name = "autor_id")  // coluna que se refere ao Genero
+    )
+    private List<Autor> autores;
+
     @OneToMany(mappedBy = "livro", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Avaliacao> avaliacaos;
-
-    protected Livro(){}
-
-    public Livro(String titulo, String pais_origem, Short ano, String descricao,
-                 String capa, String autor, Integer paginas, String editora){
-        this.titulo = titulo;
-        this.pais_origem = pais_origem;
-        this.ano = ano;
-        this.descricao = descricao;
-        this.capa = capa;
-        this.autor = autor;
-        this.paginas = paginas;
-        this.editora = editora;
-    }
 }

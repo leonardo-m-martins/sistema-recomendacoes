@@ -3,16 +3,19 @@ package br.sistema_recomendacoes.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.function.Function;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import br.sistema_recomendacoes.dto.GeneroRequestDTO;
 import br.sistema_recomendacoes.dto.GeneroResponseDTO;
+import br.sistema_recomendacoes.exception.ResourceNotFoundException;
 import br.sistema_recomendacoes.mapper.GeneroMapper;
 import br.sistema_recomendacoes.model.Genero;
 import br.sistema_recomendacoes.repository.GeneroRepository;
+import br.sistema_recomendacoes.util.PatchHelper;
 
 @Service
 public class GeneroService {
@@ -39,7 +42,7 @@ public class GeneroService {
 
     // read one
     public GeneroResponseDTO findByIdDto(Integer id){
-        Genero genero = generoRepository.findById((long) id).orElseThrow();
+        Genero genero = findById(id);
         return GeneroMapper.toResponseDTO(genero);
     }
 
@@ -79,16 +82,21 @@ public class GeneroService {
     // procurar por gênero no banco, se não existir, criar
     // isso é útil para não ter que adicionar todos os gêneros manualmente
     public List<Genero> searchAndSave(List<Genero> generos) {
+        Map<String, Genero> generosMap = generoRepository.findAll().stream()
+            .collect(Collectors.toMap(Genero::getNome, Function.identity()));
         List<Genero> generosSalvos = new ArrayList<>();
+        List<Genero> generosParaSalvar = new ArrayList<>();
         for (Genero genero : generos) {
-            Optional<Genero> generoOptional = generoRepository.findByNome(genero.getNome());
-            if(generoOptional.isPresent()){
-                generosSalvos.add(generoOptional.get());
+            String nome = genero.getNome();
+            Genero generoSalvo = generosMap.get(nome);
+            if(generoSalvo != null){
+                generosSalvos.add(generoSalvo);
             }
             else {
-                generosSalvos.add(generoRepository.save(genero));
+                generosParaSalvar.add(genero);
             }
         }
+        generosSalvos.addAll(generoRepository.saveAll(generosParaSalvar));
         return generosSalvos;
     }
 
@@ -115,6 +123,6 @@ public class GeneroService {
     }
     
     private Genero findById(Integer id){
-        return generoRepository.findById((long) id).orElseThrow();
+        return generoRepository.findById((long) id).orElseThrow( () -> new ResourceNotFoundException("Gênero (id: " + id + ") não encontrado."));
     }
 }

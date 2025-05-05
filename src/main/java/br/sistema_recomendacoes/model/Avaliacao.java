@@ -34,4 +34,14 @@ public class Avaliacao {
     @JsonIgnore
     private Usuario usuario;
 
+    public int getNotaOrPadrao(){
+        if (nota != null) {
+            return nota;
+        }
+        else { 
+            // TODO: implementar constantes
+            throw new UnsupportedOperationException("Constante padrão não implementada");
+        }
+    }
+
 }

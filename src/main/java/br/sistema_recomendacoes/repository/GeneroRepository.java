@@ -1,6 +1,7 @@
 package br.sistema_recomendacoes.repository;
 
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -13,4 +14,7 @@ public interface GeneroRepository extends JpaRepository<Genero, Long> {
     Integer countNum_livros(@Param("genero_id") Integer genero_id);    
 
     Optional<Genero> findByNome(String nome);
+
+    @Query("SELECT g.nome FROM Genero g")
+    Set<String> findAllNome();
 }

@@ -1,4 +1,4 @@
-package br.sistema_recomendacoes.service;
+package br.sistema_recomendacoes.util;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -38,6 +38,8 @@ public class PatchHelper {
         CONVERSORS.put(short.class, v -> Short.parseShort(v.toString()));
         CONVERSORS.put(Integer.class, v -> Integer.parseInt(v.toString()));
         CONVERSORS.put(int.class, v -> Integer.parseInt(v.toString()));
+        CONVERSORS.put(Float.class, v -> Float.parseFloat(v.toString()));
+        CONVERSORS.put(float.class, v -> Float.parseFloat(v.toString()));
         CONVERSORS.put(Double.class, v -> Double.parseDouble(v.toString()));
         CONVERSORS.put(double.class, v -> Double.parseDouble(v.toString()));
         CONVERSORS.put(Boolean.class, v -> Boolean.parseBoolean(v.toString()));

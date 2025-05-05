@@ -12,7 +12,7 @@ public class AvaliacaoMapper {
         
         avaliacao.setNota(dto.getNota());
         
-        Livro livro = new Livro(null, null, null, null, null, null, null, null);
+        Livro livro = new Livro();
         livro.setId(dto.getLivro_id());
         avaliacao.setLivro(livro);
 
