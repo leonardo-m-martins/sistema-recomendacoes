@@ -18,6 +18,7 @@ public class AppProperties {
         private int maxPaginas;
         private int minAno;
         private int maxAno;
+        private int notaDeCorte;
     }
 
     // Pesos

@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -25,7 +26,7 @@ public class Autor {
     private String nome;
     private Integer num_livros;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JoinTable(
         name = "livro_autor",  // nome da tabela intermediária
         joinColumns = @JoinColumn(name = "autor_id"),  // coluna que se refere à livro
@@ -38,5 +39,9 @@ public class Autor {
 
     public Autor(String nome){
         this.nome = nome;
+    }
+
+    public Autor(Integer id){
+        this.id = id;
     }
 }

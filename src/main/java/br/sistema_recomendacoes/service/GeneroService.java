@@ -1,27 +1,39 @@
 package br.sistema_recomendacoes.service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.function.Function;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import br.sistema_recomendacoes.dto.GeneroRequestDTO;
 import br.sistema_recomendacoes.dto.GeneroResponseDTO;
+import br.sistema_recomendacoes.dto.LivroRequestDTO;
 import br.sistema_recomendacoes.exception.ResourceNotFoundException;
 import br.sistema_recomendacoes.mapper.GeneroMapper;
 import br.sistema_recomendacoes.model.Genero;
 import br.sistema_recomendacoes.repository.GeneroRepository;
 import br.sistema_recomendacoes.util.PatchHelper;
+import br.sistema_recomendacoes.util.Validator;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
 
 @Service
 public class GeneroService {
     
     @Autowired
     private GeneroRepository generoRepository;
+
+    @Autowired
+    private EntityManager entityManager;
 
     // create
     public GeneroResponseDTO add(GeneroRequestDTO requestDTO){
@@ -31,8 +43,9 @@ public class GeneroService {
     }
 
     // read all
-    public List<GeneroResponseDTO> findAllDto(){
-        Iterable<Genero> generos = generoRepository.findAll();
+    public List<GeneroResponseDTO> findAllDto(int page, int size){
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Genero> generos = generoRepository.findAll(pageable);
         List<GeneroResponseDTO> responseDTOs = new ArrayList<>();
         for (Genero genero : generos) {
             responseDTOs.add(GeneroMapper.toResponseDTO(genero));
@@ -83,7 +96,11 @@ public class GeneroService {
     // isso é útil para não ter que adicionar todos os gêneros manualmente
     public List<Genero> searchAndSave(List<Genero> generos) {
         Map<String, Genero> generosMap = generoRepository.findAll().stream()
-            .collect(Collectors.toMap(Genero::getNome, Function.identity()));
+            .collect(Collectors.toMap(
+				Genero::getNome, 
+				Function.identity(), 
+				(existente, novo) -> existente
+			));
         List<Genero> generosSalvos = new ArrayList<>();
         List<Genero> generosParaSalvar = new ArrayList<>();
         for (Genero genero : generos) {
@@ -99,6 +116,53 @@ public class GeneroService {
         generosSalvos.addAll(generoRepository.saveAll(generosParaSalvar));
         return generosSalvos;
     }
+
+    @Transactional
+    public Map<String, Integer> searchAndSaveFromDTOs(List<LivroRequestDTO> dtos) {
+        final Map<String, Integer> generosMap = generoRepository.findAll().stream()
+            .collect(Collectors.toMap(
+                Genero::getNome,
+                Genero::getId,
+                (existente, novo) -> existente
+            ));
+    
+        Set<String> novosNomes = new HashSet<>();
+    
+        for (LivroRequestDTO dto : dtos) {
+            for (GeneroRequestDTO gDto : dto.getGeneros()) {
+                if(!Validator.validate(gDto)) continue;
+                String nome = gDto.getNome();
+    
+                if (!generosMap.containsKey(nome)) {
+                    novosNomes.add(nome);
+                }
+            }
+        }
+    
+        final int batchSize = 500;
+        List<Genero> batch = new ArrayList<>(batchSize);
+        for (String nome : novosNomes) {
+            Genero g = new Genero(nome);
+            batch.add(g);
+    
+            if (batch.size() == batchSize) {
+                List<Genero> salvos = generoRepository.saveAll(batch);
+                salvos.forEach(s -> generosMap.put(s.getNome(), s.getId()));
+                batch.clear();
+                entityManager.flush();
+                entityManager.clear();
+            }
+        }
+    
+        // Salva o que sobrou
+        if (!batch.isEmpty()) {
+            List<Genero> salvos = generoRepository.saveAll(batch);
+            salvos.forEach(s -> generosMap.put(s.getNome(), s.getId()));
+        }
+    
+        return generosMap;
+    }
+    
 
     public List<Genero> patchLivroGeneros(Object generosObject) {
         if(generosObject instanceof List){

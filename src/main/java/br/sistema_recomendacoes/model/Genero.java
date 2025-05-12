@@ -24,6 +24,7 @@ public class Genero {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+	
     private String nome;
 
     @ManyToMany(fetch = FetchType.LAZY)
@@ -41,5 +42,9 @@ public class Genero {
 
     public Genero(String nome){
         this.nome = nome;
+    }
+
+    public Genero(Integer id){
+        this.id = id;
     }
 }

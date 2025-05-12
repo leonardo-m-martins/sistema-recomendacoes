@@ -2,8 +2,8 @@ package br.sistema_recomendacoes.mapper;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.springframework.transaction.annotation.Transactional;
+import java.util.Map;
+import java.util.Objects;
 
 import br.sistema_recomendacoes.dto.AutorRequestDTO;
 import br.sistema_recomendacoes.dto.AutorResponseDTO;
@@ -45,7 +45,39 @@ public class LivroMapper {
         return livro;
     }
 
-    @Transactional
+    public static Livro fromRequestDTO(LivroRequestDTO dto, Map<String, Integer> generosMap, Map<String, Integer> autoresMap) {
+        Livro livro = Livro.builder()
+            .titulo(dto.getTitulo())
+            .descricao(dto.getDescricao())
+            .primeira_data_publicacao(dto.getPrimeira_data_publicacao())
+            .data_publicacao(dto.getData_publicacao())
+            .subtitulo(dto.getSubtitulo())
+            .capa(dto.getCapa())
+            .paginas(dto.getPaginas())
+            .editora(dto.getEditora())
+            .build();
+
+        livro.setGeneros(dto.getGeneros().stream()
+            .distinct()
+            .map(g -> {
+                Integer id = generosMap.get(g.getNome());
+                return (id != null) ? new Genero(id) : null;
+            })
+            .filter(Objects::nonNull)
+            .toList());
+
+        livro.setAutores(dto.getAutores().stream()
+            .distinct()
+            .map(a -> {
+                Integer id = autoresMap.get(a.getNome());
+                return (id != null) ? new Autor(id) : null;
+            })
+            .filter(Objects::nonNull)
+            .toList());
+
+        return livro;
+    }
+
     public static LivroResponseDTO toResponseDTO(Livro livro) {
         LivroResponseDTO dto = new LivroResponseDTO();
         dto.setId(livro.getId());

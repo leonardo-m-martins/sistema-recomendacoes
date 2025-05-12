@@ -24,15 +24,17 @@ public class Usuario {
     private Integer id;
     private String nome;
     private String senha;
+    private String email;
 
     @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Avaliacao> avaliacaos;
 
-    protected Usuario(){}
+    public Usuario(){}
 
-    public Usuario(String nome, String senha){
+    public Usuario(String nome, String senha, String email){
         this.nome = nome;
         this.senha = senha;
+        this.email = email;
     }
 }

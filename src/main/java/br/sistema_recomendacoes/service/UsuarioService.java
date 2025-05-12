@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,7 +23,7 @@ import br.sistema_recomendacoes.repository.UsuarioRepository;
 import br.sistema_recomendacoes.util.PatchHelper;
 
 @Service
-public class UsuarioService {
+public class UsuarioService implements UserDetailsService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
@@ -28,12 +31,8 @@ public class UsuarioService {
     @Autowired
     private AvaliacaoService avaliacaoService;
 
-    // create
-    public UsuarioResponseDTO add(UsuarioRequestDTO requestDTO) {
-        Usuario usuario = UsuarioMapper.fromRequestDTO(requestDTO);
-        Usuario salvo = usuarioRepository.save(usuario);
-        return UsuarioMapper.toResponseDTO(salvo);
-    }
+    @Autowired
+    private AuthService authService;
 
     // read all
     public List<UsuarioResponseDTO> getAllUsuarios() {
@@ -53,6 +52,7 @@ public class UsuarioService {
 
     // put
     public UsuarioResponseDTO put(Integer id, UsuarioRequestDTO requestDTO){
+        authService.encodeSenha(requestDTO);
         findById(id); // verifica se o usuario existe no banco de dados
         Usuario novoUsuario = UsuarioMapper.fromRequestDTO(requestDTO);
         novoUsuario.setId(id); // garante que o id é o mesmo
@@ -62,7 +62,13 @@ public class UsuarioService {
 
     // patch
     public UsuarioResponseDTO patch(Integer id, Map<String, Object> updateMap){
+        
         Usuario usuario = findById(id);
+        if(updateMap.containsKey("senha")){
+            String senha = (String) updateMap.get("senha");
+            usuario.setSenha(authService.encodeSenha(senha));
+            updateMap.remove("senha");
+        }
         PatchHelper.applyPatch(usuario, updateMap);
         Usuario salvo = usuarioRepository.save(usuario);
         return UsuarioMapper.toResponseDTO(salvo);
@@ -74,7 +80,7 @@ public class UsuarioService {
         usuarioRepository.delete(usuario);
     }
 
-    private Usuario findById(Integer id){
+    public Usuario findById(Integer id){
         return usuarioRepository.findById((long) id).orElseThrow( () -> new ResourceNotFoundException("Usuário (id: " + id + ") não encontrado."));
     }
 
@@ -94,5 +100,14 @@ public class UsuarioService {
 
     public List<Usuario> findAllList(){
         return usuarioRepository.findAll();
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws ResourceNotFoundException {
+        Usuario usuario = usuarioRepository.findByNome(username);
+        if (usuario == null) {
+            throw new ResourceNotFoundException("Usuário não encontrado");
+        }
+        return new User(usuario.getNome(), usuario.getSenha(), List.of()); // sem roles por enquanto
     }
 }

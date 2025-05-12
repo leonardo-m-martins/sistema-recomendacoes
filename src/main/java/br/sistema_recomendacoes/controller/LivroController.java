@@ -1,6 +1,6 @@
 package br.sistema_recomendacoes.controller;
 
-import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -15,12 +15,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.sistema_recomendacoes.dto.LivroRequestDTO;
 import br.sistema_recomendacoes.dto.LivroResponseDTO;
 import br.sistema_recomendacoes.service.LivroService;
+import br.sistema_recomendacoes.util.Cronometro;
 
 @RestController
 @RequestMapping(path = "/api/livro")
@@ -36,8 +38,8 @@ public class LivroController {
     }
 
     @GetMapping("/")
-    public @ResponseBody ResponseEntity<List<LivroResponseDTO>> findAll(){
-        List<LivroResponseDTO> livrosIterable = livroService.findAll();
+    public @ResponseBody ResponseEntity<List<LivroResponseDTO>> findAll(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size){
+        List<LivroResponseDTO> livrosIterable = livroService.findAll(page, size);
         return ResponseEntity.ok().body(livrosIterable);
     }
 
@@ -65,9 +67,24 @@ public class LivroController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping(value = "/jsonl", consumes = "application/jsonl")
-    public @ResponseBody ResponseEntity<Void> addFromJSONL(InputStream inputStream){
-        livroService.addFromJSONL(inputStream);
-        return ResponseEntity.ok().build();
+    @PostMapping("/list")
+    public @ResponseBody ResponseEntity<Map<String, String>> addMany(@RequestBody List<LivroRequestDTO> requestDTOs){
+
+        Cronometro cronometro = new Cronometro();
+
+        cronometro.start();
+        Integer livrosSalvos = livroService.addMany(requestDTOs);
+        double duracao = cronometro.stop();
+
+        Map<String, String> resposta = new HashMap<>();
+        resposta.put("total_salvos", String.valueOf(livrosSalvos));
+        resposta.put("time", String.valueOf(duracao));
+        
+        return ResponseEntity.status(HttpStatus.CREATED).body(resposta);
+    }
+
+    @GetMapping("/search")
+    public @ResponseBody ResponseEntity<List<LivroResponseDTO>> search(@RequestParam(name = "q") String q){
+        return ResponseEntity.ok().body(livroService.search(q));
     }
 }

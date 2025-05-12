@@ -47,7 +47,7 @@ public class Livro {
     private Integer paginas;
     private String editora;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "livro_genero",  // nome da tabela intermediária
         joinColumns = @JoinColumn(name = "livro_id"),  // coluna que se refere à Obra
@@ -56,7 +56,7 @@ public class Livro {
     //@JsonIgnore
     private List<Genero> generos;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "livro_autor",  // nome da tabela intermediária
         joinColumns = @JoinColumn(name = "livro_id"),  // coluna que se refere à Obra

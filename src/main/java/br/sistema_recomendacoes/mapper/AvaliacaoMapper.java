@@ -16,7 +16,7 @@ public class AvaliacaoMapper {
         livro.setId(dto.getLivro_id());
         avaliacao.setLivro(livro);
 
-        Usuario usuario = new Usuario(null, null);
+        Usuario usuario = new Usuario();
         usuario.setId(dto.getUsuario_id());
         avaliacao.setUsuario(usuario);
 

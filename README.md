@@ -27,6 +27,7 @@ Este projeto é um sistema de recomendação que sugere livros similares aos liv
 - Lombok
 - Docker Compose Support
 - Testcontainers
+- Java JWT
 
 ## Algoritmo de Recomendação
 
@@ -79,6 +80,8 @@ recomendações.
 	- [Sumário](#sumário)
 	- [Autenticação](#autenticação)
 	- [Endpoints](#endpoints)
+		- [POST /auth/cadastrar](#post-authcadastrar)
+		- [POST /auth/login](#post-authlogin)
 		- [GET /livro/](#get-livro)
 		- [POST /livro/](#post-livro)
 		- [GET /livro/{id}](#get-livroid)
@@ -86,7 +89,6 @@ recomendações.
 		- [PATCH /livro/{id}](#patch-livroid)
 		- [DELETE /livro/{id}](#delete-livroid)
 		- [GET /usuario/](#get-usuario)
-		- [POST /usuario/](#post-usuario)
 		- [GET /usuario/{id}](#get-usuarioid)
 		- [PUT /usuario/{id}](#put-usuarioid)
 		- [PATCH /usuario/{id}](#patch-usuarioid)
@@ -114,11 +116,65 @@ recomendações.
 
 ## Autenticação
 
-**Ainda não implementada.**
+Authorization Bearer token_aqui
 
 ---
 
 ## Endpoints
+
+### POST /auth/cadastrar
+
+**Descrição:** Cadastra um novo usuário no banco.
+
+**Requisição:**
+``` bash
+curl --request POST \
+  --url http://localhost:8080/api/auth/cadastrar \
+  --header 'Content-Type: application/json' \
+  --header 'User-Agent: insomnia/11.0.2' \
+  --data '{
+	"nome": "Luís",
+	"email": "luis@gmail.com",
+	"senha": "qwerty"
+}'
+```
+
+**Resposta:**
+
+``` json
+{
+	"id": 1,
+	"nome": "Luís",
+	"email": "luis@gmail.com"
+}
+```
+
+### POST /auth/login
+
+**Descrição:** Login de um usuário existente.
+
+**Requisição:**
+
+``` bash
+curl --request POST \
+  --url http://localhost:8080/api/auth/login \
+  --header 'Content-Type: application/json' \
+  --header 'User-Agent: insomnia/11.0.2' \
+  --data '{
+	"nome": "Luís",
+	"senha": "qwerty"
+}'
+```
+
+**Resposta:**
+
+``` json
+{
+	"usuarioId": "1",
+	"usuarioNome": "Jonas",
+	"token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJMdcOtcyIsImlhdCI6MTc0NjgyNTQyOSwiZXhwIjoxNzQ2OTExODI5fQ.xYrLOk581gTPVzyKEpGMPfbu_nodTONrv3ydIM_KSno"
+}
+```
 
 ### GET /livro/
 
@@ -128,13 +184,14 @@ recomendações.
 
 ``` bash
 curl --request GET \
-  --url http://localhost:8080/api/livro/ \
+  --url 'http://localhost:8080/api/livro/?page=0&size=20' \
+  --header 'Authorization: Bearer token_aqui' \
   --header 'User-Agent: insomnia/11.0.2'
 ```
 
 **Resposta:**
 
-```json
+``` json
 [
 	{
 		"id": 1,
@@ -540,38 +597,6 @@ curl --request GET \
 		"nome": "Luís"
 	}
 ]
-```
-
-### POST /usuario/
-
-**Descrição:** Cria um novo usuário.
-
-**Requisição:**
-``` bash
-curl --request POST \
-  --url http://localhost:8080/api/usuario/ \
-  --header 'Content-Type: application/json' \
-  --header 'User-Agent: insomnia/11.0.2' \
-  --data '{
-	"nome": "Jonas",
-	"senha": "12345"
-}'
-```
-
-**Body (JSON):**
-``` json
-{
-	"nome": "Jonas",
-	"senha": "12345"
-}
-```
-
-**Resposta:**
-``` json
-{
-	"id": 1,
-	"nome": "Jonas"
-}
 ```
 
 ### GET /usuario/{id}

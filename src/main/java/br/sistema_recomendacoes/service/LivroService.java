@@ -1,18 +1,14 @@
 package br.sistema_recomendacoes.service;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.io.InputStream;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import br.sistema_recomendacoes.config.AppProperties;
 import br.sistema_recomendacoes.config.AppProperties.Limits;
@@ -27,6 +23,9 @@ import br.sistema_recomendacoes.model.VetorLivro;
 import br.sistema_recomendacoes.repository.LivroRepository;
 import br.sistema_recomendacoes.repository.VetorLivroRepository;
 import br.sistema_recomendacoes.util.PatchHelper;
+import br.sistema_recomendacoes.util.Validator;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
 
 @Service
 public class LivroService {
@@ -43,6 +42,9 @@ public class LivroService {
     @Autowired
     private AutorService autorService;
 
+    @Autowired
+    private EntityManager entityManager;
+
     // limites para vetorização
     private final int MAX_PAGINAS;
     private final int MIN_ANO;
@@ -57,6 +59,7 @@ public class LivroService {
     }
 
     // create
+    @Transactional
     public LivroResponseDTO add(LivroRequestDTO requestDTO){
         Livro livro = LivroMapper.fromRequestDTO(requestDTO);
 
@@ -69,27 +72,33 @@ public class LivroService {
         livro.setAutores(autoresSalvos);
 
         Livro salvo = livroRepository.save(livro);
+
         vectorize(salvo);
+
         return LivroMapper.toResponseDTO(salvo);
     }
 
     // read all
-    public List<LivroResponseDTO> findAll(){
-        Iterable<Livro> livroIterable = livroRepository.findAll();
+    @Transactional
+    public List<LivroResponseDTO> findAll(int page, int size){
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Livro> livros = livroRepository.findAll(pageable);
         List<LivroResponseDTO> responseDTOs = new ArrayList<>();
-        for (Livro livro : livroIterable) {
+        for (Livro livro : livros) {
             responseDTOs.add(LivroMapper.toResponseDTO(livro));
         }
         return responseDTOs;
     }
 
     // read one
+    @Transactional
     public LivroResponseDTO findByIdDto(Integer id){
         Livro livro = findById(id);
         return LivroMapper.toResponseDTO(livro);
     }
 
     // put
+    @Transactional
     public LivroResponseDTO put(Integer id, LivroRequestDTO requestDTO){
         findById(id);
         Livro livroAtualizado = LivroMapper.fromRequestDTO(requestDTO);
@@ -107,6 +116,7 @@ public class LivroService {
     }
 
     // patch
+    @Transactional
     public LivroResponseDTO patch(Integer id, Map<String, Object> updateMap){
         Livro livro = findById(id);
         
@@ -134,34 +144,60 @@ public class LivroService {
         livroRepository.delete(livro);
     }
 
-    // add from jsonl
-    public void addFromJSONL(InputStream inputStream){
-        ObjectMapper mapper = new ObjectMapper();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-        String linha;
-        List<Livro> livros = new LinkedList<>();
+    // adicionar lista
+    @Transactional
+    public Integer addMany(List<LivroRequestDTO> requestDTOs) {
+        if (requestDTOs == null || requestDTOs.isEmpty()) return 0;
 
-        try {
-            while ((linha = reader.readLine()) != null) {
-                LivroRequestDTO requestDTO = mapper.readValue(linha, LivroRequestDTO.class);
-                Livro livro = LivroMapper.fromRequestDTO(requestDTO);
-
-                // salvar os gêneros do livro se não existirem
-                List<Genero> generosSalvos = generoService.searchAndSave(livro.getGeneros());
-                livro.setGeneros(generosSalvos);
-
-                // salvar os autores do livro se não existirem
-                List<Autor> autoresSalvos = autorService.searchAndSave(livro.getAutores());
-                livro.setAutores(autoresSalvos);
-
-                // Colocar na lista
-                livros.add(livro);
+        // carrega todos os gêneros e autores, e compara pelo nome 
+        // com os da lista de livros para não salvar duplicatas
+        final Map<String, Integer> generosMap = generoService.searchAndSaveFromDTOs(requestDTOs);
+        final Map<String, Integer> autoresMap = autorService.searchAndSaveFromDTOs(requestDTOs);
+    
+        final int batchSize = 50;
+        int totalSalvos = 0;
+        List<Livro> batch = new ArrayList<>(batchSize);
+    
+        for (LivroRequestDTO dto : requestDTOs) {
+            Livro livro = LivroMapper.fromRequestDTO(dto, generosMap, autoresMap);
+            if (Validator.validate(livro)) batch.add(livro);
+    
+            if (batch.size() == batchSize) {
+                try {
+                    livroRepository.saveAll(batch);
+                    entityManager.flush();
+                    entityManager.clear();
+                    totalSalvos += batch.size(); // usa o tamanho real salvo
+                } catch (Exception e) {
+                    System.out.println("Falha ao salvar batch com " + batch.size() + " livros. Erro: " + e.getMessage());
+                } finally {
+                    batch.clear(); // limpa sempre, com ou sem falha
+                }
             }
-        } catch (IOException e) {
-            throw new RuntimeException("Erro ao ler JSONL", e);
         }
-        livros = livroRepository.saveAll(livros);
-        vectorizeAll(livros);
+    
+        if (!batch.isEmpty()) {
+            try {
+                livroRepository.saveAll(batch);
+                totalSalvos += batch.size();
+                entityManager.flush();
+                entityManager.clear();
+            } catch (Exception e) {
+                System.out.println("Falha ao salvar último batch com " + batch.size() + " livros. Erro: " + e.getMessage());
+            }
+        }
+    
+        return totalSalvos;
+    }    
+    
+    @Transactional
+    public List<LivroResponseDTO> search(String q){
+        List<Livro> livros = livroRepository.buscaPorTextoEAutor(q);
+        List<LivroResponseDTO> dtos = new ArrayList<>(livros.size());
+        for (Livro livro : livros) {
+            dtos.add(LivroMapper.toResponseDTO(livro));
+        }
+        return dtos;
     }
 
     private void vectorize(Livro livro){
@@ -169,13 +205,13 @@ public class LivroService {
         vetorLivroRepository.save(vetor);
     }
 
-    private void vectorizeAll(List<Livro> livros){
-        List<VetorLivro> vetores = new LinkedList<>();
-        for (Livro livro : livros) {
-            vetores.add(new VetorLivro(livro, MAX_PAGINAS, MIN_ANO, MAX_ANO));
-        }
-        vetorLivroRepository.saveAll(vetores);
-    }
+    // private void vectorizeAll(List<Livro> livros){
+    //     List<VetorLivro> vetores = new ArrayList<>();
+    //     for (Livro livro : livros) {
+    //         vetores.add(new VetorLivro(livro, MAX_PAGINAS, MIN_ANO, MAX_ANO));
+    //     }
+    //     vetorLivroRepository.saveAll(vetores);
+    // }
 
     public Livro findById(Integer id){
         return livroRepository.findById((long) id).orElseThrow( () -> new ResourceNotFoundException("Livro (id: " + id + ") não encontrado."));
@@ -187,5 +223,9 @@ public class LivroService {
 
     public List<Livro> findAllList(){
         return livroRepository.findAll();
+    }
+
+    public Page<Livro> findAll(Pageable pageable){
+        return livroRepository.findAll(pageable);
     }
 }
