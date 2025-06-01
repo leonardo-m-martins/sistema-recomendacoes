@@ -35,6 +35,9 @@ CREATE TABLE IF NOT EXISTS livro (
     editora VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin
 );
 
+-- Adicionar índice FULLTEXT
+ALTER TABLE livro ADD FULLTEXT (titulo, descricao);
+
 -- Relação N:N entre livros e autores
 CREATE TABLE IF NOT EXISTS livro_autor (
     livro_id INT,
@@ -65,17 +68,23 @@ CREATE TABLE IF NOT EXISTS avaliacao (
 );
 
 CREATE TABLE IF NOT EXISTS vetor_livro (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id INT PRIMARY KEY,
     vetor_generos LONGBLOB,          -- Tipo usado para armazenar o IntSet
+    modulo_generos FLOAT,
     vetor_autores LONGBLOB,          -- Tipo usado para armazenar o IntSet
-    paginas_normalizado FLOAT,   -- Campo para o número de páginas normalizado
-    ano_normalizado FLOAT        -- Campo para o ano normalizado
+    modulo_autores FLOAT,
+    paginas FLOAT,   -- Campo para o número de páginas
+    ano FLOAT,   -- Campo para o ano de publicação
+    FOREIGN KEY (id) REFERENCES livro(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS vetor_usuario (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id INT PRIMARY KEY,
     vetor_generos LONGBLOB,          -- Tipo usado para armazenar o Int2FloatMap
+    modulo_generos FLOAT,
     vetor_autores LONGBLOB,          -- Tipo usado para armazenar o Int2FloatMap
-    paginas_normalizado FLOAT,   -- Campo para o número de páginas normalizado
-    ano_normalizado FLOAT        -- Campo para o ano normalizado
+    modulo_autores FLOAT,
+    paginas FLOAT,   -- Campo para o número de páginas (média)
+    ano FLOAT,       -- Campo para o ano (média)
+    FOREIGN KEY (id) REFERENCES usuario(id) ON DELETE CASCADE
 );

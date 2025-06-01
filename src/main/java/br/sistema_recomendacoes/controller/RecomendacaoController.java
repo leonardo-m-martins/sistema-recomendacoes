@@ -27,13 +27,18 @@ public class RecomendacaoController {
         return ResponseEntity.ok().body(recomendacaoService.recomendar(usuario_id, K));
     }
 
-    @PostMapping(path = "/vetor_livro")
+    @GetMapping(path = "/colaborativa/{usuario_id}")
+    public @ResponseBody ResponseEntity<List<LivroResponseDTO>> colaborativa(@PathVariable Integer usuario_id, @RequestParam(defaultValue = "10") int K){
+        return ResponseEntity.ok().body(recomendacaoService.recomendarColaborativa(usuario_id, K));
+    }
+
+    @PostMapping(path = "/vetor-livro")
     public @ResponseBody ResponseEntity<Void> updateVetor_livro(){
         recomendacaoService.updateVetorLivros();
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping(path = "/vetor_usuario")
+    @PostMapping(path = "/vetor-usuario")
     public @ResponseBody ResponseEntity<Void> updateVetor_usuario(){
         recomendacaoService.updateVetorUsuarios();
         return ResponseEntity.ok().build();

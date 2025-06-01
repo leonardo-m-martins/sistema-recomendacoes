@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -38,9 +39,11 @@ public class LivroController {
     }
 
     @GetMapping("/")
-    public @ResponseBody ResponseEntity<List<LivroResponseDTO>> findAll(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size){
-        List<LivroResponseDTO> livrosIterable = livroService.findAll(page, size);
-        return ResponseEntity.ok().body(livrosIterable);
+    public @ResponseBody ResponseEntity<Page<LivroResponseDTO>> findAll(@RequestParam(defaultValue = "0") int page, 
+            @RequestParam(defaultValue = "20") int size, @RequestParam(defaultValue = "titulo") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction){
+        Page<LivroResponseDTO> livros = livroService.findAll(page, size, sortBy, direction);
+        return ResponseEntity.ok().body(livros);
     }
 
     @GetMapping("/{id}")

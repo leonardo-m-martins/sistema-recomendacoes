@@ -8,10 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import br.sistema_recomendacoes.config.AppProperties;
-import br.sistema_recomendacoes.config.AppProperties.Limits;
 import br.sistema_recomendacoes.dto.LivroRequestDTO;
 import br.sistema_recomendacoes.dto.LivroResponseDTO;
 import br.sistema_recomendacoes.exception.ResourceNotFoundException;
@@ -45,19 +44,6 @@ public class LivroService {
     @Autowired
     private EntityManager entityManager;
 
-    // limites para vetorização
-    private final int MAX_PAGINAS;
-    private final int MIN_ANO;
-    private final int MAX_ANO;
-
-    @Autowired
-    public LivroService(AppProperties appProperties){
-        Limits limits = appProperties.getLimits();
-        MAX_PAGINAS = limits.getMaxPaginas();
-        MIN_ANO = limits.getMinAno();
-        MAX_ANO = limits.getMaxAno();
-    }
-
     // create
     @Transactional
     public LivroResponseDTO add(LivroRequestDTO requestDTO){
@@ -80,14 +66,11 @@ public class LivroService {
 
     // read all
     @Transactional
-    public List<LivroResponseDTO> findAll(int page, int size){
-        Pageable pageable = PageRequest.of(page, size);
+    public Page<LivroResponseDTO> findAll(int page, int size, String sortBy, String direction){
+        Sort sort = (direction.equalsIgnoreCase("desc")) ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
         Page<Livro> livros = livroRepository.findAll(pageable);
-        List<LivroResponseDTO> responseDTOs = new ArrayList<>();
-        for (Livro livro : livros) {
-            responseDTOs.add(LivroMapper.toResponseDTO(livro));
-        }
-        return responseDTOs;
+        return livros.map(l -> LivroMapper.toResponseDTO(l));
     }
 
     // read one
@@ -201,7 +184,7 @@ public class LivroService {
     }
 
     private void vectorize(Livro livro){
-        VetorLivro vetor = new VetorLivro(livro, MAX_PAGINAS, MIN_ANO, MAX_ANO);
+        VetorLivro vetor = new VetorLivro(livro);
         vetorLivroRepository.save(vetor);
     }
 

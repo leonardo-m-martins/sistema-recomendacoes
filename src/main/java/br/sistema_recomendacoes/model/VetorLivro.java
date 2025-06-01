@@ -23,12 +23,16 @@ public class VetorLivro {
     @Convert(converter = IntSetConverter.class)
     private IntSet vetor_generos;
 
+    private Float modulo_generos;
+
     @Lob
     @Convert(converter = IntSetConverter.class)
     private IntSet vetor_autores;
 
-    private float paginas_normalizado;
-    private float ano_normalizado;
+    private Float modulo_autores;
+
+    private Float paginas;
+    private Float ano;
 
     /*
      * Vetorização de Livros:
@@ -38,7 +42,7 @@ public class VetorLivro {
      * e 0 para valores ausentes.
      * Os valores numéricos são normalizados e salvos em float.
      */
-    public VetorLivro(Livro livro, int maxPaginas, int minAno, int maxAno) {
+    public VetorLivro(Livro livro) {
         id = (int) livro.getId();
         vetor_generos = new IntOpenHashSet();
         vetor_autores = new IntOpenHashSet();
@@ -51,13 +55,13 @@ public class VetorLivro {
             vetor_autores.add((int) autor.getId());
         }
 
-        if (livro.getPaginas() != null && maxPaginas > 0) {
-            paginas_normalizado = livro.getPaginas() / (float) maxPaginas;
-        }
+        paginas = (livro.getPaginas() != null) ? Float.valueOf(livro.getPaginas()) : null;
 
-        if (livro.getPrimeira_data_publicacao() != null && maxAno > minAno) {
-            ano_normalizado = (livro.getPrimeira_data_publicacao() - minAno) / (float)(maxAno - minAno);
-        }
+        ano = (livro.getPrimeira_data_publicacao() != null) ? Float.valueOf(livro.getPrimeira_data_publicacao()) : null;
+
+        modulo_generos = (vetor_generos.isEmpty()) ? null : moduloGeneros();
+
+        modulo_autores = (vetor_autores.isEmpty()) ? null : moduloAutores();
     }
     // A intensidade do vetor é sempre 1, 1² = 1, portanto, módulo = sqrt(size)
     public float moduloGeneros(){
@@ -66,10 +70,17 @@ public class VetorLivro {
     public float moduloAutores(){
         return (float) Math.sqrt((double) vetor_autores.size());
     }
-    public float moduloPaginas(){
-        return (float) Math.sqrt( (double) paginas_normalizado * paginas_normalizado );
+
+    @Override
+    public boolean equals(Object obj){
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        VetorLivro other = (VetorLivro) obj;
+        return this.id == other.id;
     }
-    public float moduloAno(){
-        return (float) Math.sqrt( (double) ano_normalizado * ano_normalizado );
+
+    @Override
+    public int hashCode(){
+        return Integer.hashCode(id);
     }
 }

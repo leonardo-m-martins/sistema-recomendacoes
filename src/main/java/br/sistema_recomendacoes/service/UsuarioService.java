@@ -12,15 +12,15 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.sistema_recomendacoes.dto.UsuarioRequestDTO;
+import br.sistema_recomendacoes.dto.LivroResponseDTO;
 import br.sistema_recomendacoes.dto.UsuarioResponseDTO;
 import br.sistema_recomendacoes.exception.ResourceNotFoundException;
+import br.sistema_recomendacoes.mapper.LivroMapper;
 import br.sistema_recomendacoes.mapper.UsuarioMapper;
 import br.sistema_recomendacoes.model.Avaliacao;
 import br.sistema_recomendacoes.model.Usuario;
 import br.sistema_recomendacoes.model.VetorLivro;
 import br.sistema_recomendacoes.repository.UsuarioRepository;
-import br.sistema_recomendacoes.util.PatchHelper;
 
 @Service
 public class UsuarioService implements UserDetailsService {
@@ -30,9 +30,6 @@ public class UsuarioService implements UserDetailsService {
 
     @Autowired
     private AvaliacaoService avaliacaoService;
-
-    @Autowired
-    private AuthService authService;
 
     // read all
     public List<UsuarioResponseDTO> getAllUsuarios() {
@@ -50,34 +47,22 @@ public class UsuarioService implements UserDetailsService {
         return UsuarioMapper.toResponseDTO(usuario);
     }
 
-    // put
-    public UsuarioResponseDTO put(Integer id, UsuarioRequestDTO requestDTO){
-        authService.encodeSenha(requestDTO);
-        findById(id); // verifica se o usuario existe no banco de dados
-        Usuario novoUsuario = UsuarioMapper.fromRequestDTO(requestDTO);
-        novoUsuario.setId(id); // garante que o id é o mesmo
-        Usuario salvo = usuarioRepository.save(novoUsuario);
-        return UsuarioMapper.toResponseDTO(salvo);
-    }
-
-    // patch
-    public UsuarioResponseDTO patch(Integer id, Map<String, Object> updateMap){
-        
-        Usuario usuario = findById(id);
-        if(updateMap.containsKey("senha")){
-            String senha = (String) updateMap.get("senha");
-            usuario.setSenha(authService.encodeSenha(senha));
-            updateMap.remove("senha");
-        }
-        PatchHelper.applyPatch(usuario, updateMap);
-        Usuario salvo = usuarioRepository.save(usuario);
-        return UsuarioMapper.toResponseDTO(salvo);
-    }
-
     // delete
     public void delete(Integer id){
         Usuario usuario = findById(id);
         usuarioRepository.delete(usuario);
+    }
+
+    // histórico
+    @Transactional
+    public List<LivroResponseDTO> historico(Integer id){
+        Usuario usuario = findById(id);
+        List<Avaliacao> avaliacaos = usuario.getAvaliacaos();
+        List<LivroResponseDTO> dtos = new ArrayList<>(avaliacaos.size());
+        for (Avaliacao avaliacao : avaliacaos) {
+            dtos.add(LivroMapper.toResponseDTO(avaliacao.getLivro()));
+        }
+        return dtos;
     }
 
     public Usuario findById(Integer id){
@@ -85,11 +70,11 @@ public class UsuarioService implements UserDetailsService {
     }
 
     @Transactional
-    public Map<Integer, VetorLivro> getHistorico(Integer id_usuario, int MAXPAGINAS, int MINANO, int MAXANO){
+    public Map<Integer, VetorLivro> getHistorico(Integer id_usuario){
         Map<Integer, VetorLivro> historico = new HashMap<>();
         Iterable<Avaliacao> avaliacaos = avaliacaoService.findByUsuario_id(id_usuario);
         for (Avaliacao avaliacao : avaliacaos) {
-            historico.put(avaliacao.getNotaOrPadrao(), new VetorLivro(avaliacao.getLivro(), MAXPAGINAS, MINANO, MAXANO));
+            historico.put(avaliacao.getNotaOrPadrao(), new VetorLivro(avaliacao.getLivro()));
         }
         return historico;
     }

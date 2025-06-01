@@ -19,6 +19,8 @@ public class AppProperties {
         private int minAno;
         private int maxAno;
         private int notaDeCorte;
+        private int notaMax;
+        private int notaMin;
     }
 
     // Pesos

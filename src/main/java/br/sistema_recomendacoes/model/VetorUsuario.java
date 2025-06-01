@@ -29,60 +29,88 @@ public class VetorUsuario {
     @Convert(converter = Int2FloatMapConverter.class)
     private Int2FloatMap vetor_generos;
 
+    private Float modulo_generos;
+
     @Lob
     @Convert(converter = Int2FloatMapConverter.class)
     private Int2FloatMap vetor_autores;
 
-    private float paginas_normalizado;
-    private float ano_normalizado;
+    private Float modulo_autores;
 
-    // somaNotas é usado para calcular a média ponderada
-    private transient int somaNotas = 0;
+    private Float paginas;
+    private Float ano;
 
-    public VetorUsuario(int id, Map<Integer, VetorLivro> historico){
+    public VetorUsuario(int id, Map<Integer, VetorLivro> historico, int notaMax, int notaMin){
         this.id = id;
+        float[] somaNotas = {0.0f, 0.0f, 0.0f, 0.0f};
 
         vetor_generos = new Int2FloatOpenHashMap();
+        vetor_generos.defaultReturnValue(0.0f);
         vetor_autores = new Int2FloatOpenHashMap();
+        vetor_autores.defaultReturnValue(0.0f);
+
+        // placeholders
+        paginas = 0.0f; 
+        ano = 0.0f;
 
         historico.forEach(
             (nota, vetorLivro) -> {
-                somaNotas += nota;
+                float nota_normalizada = (float) (nota - notaMin) / (float) (notaMax - notaMin);
 
                 // gêneros
-                vetorLivro.getVetor_generos().forEach(
-                    (int idGenero) -> {
-                        vetor_generos.put(idGenero, vetor_generos.get(idGenero) + 1.0f * nota);
-                    }
-                );
+                if (!vetorLivro.getVetor_generos().isEmpty()) {
+                    somaNotas[0] += nota_normalizada;
+                    vetorLivro.getVetor_generos().forEach(
+                        (int idGenero) -> {
+                            vetor_generos.put(idGenero, (vetor_generos.get(idGenero) + 1.0f * nota_normalizada));
+                        }
+                    );
+                }
 
                 // autores
-                vetorLivro.getVetor_autores().forEach(
-                    (int idAutor) -> {
-                        vetor_autores.put(idAutor, vetor_autores.get(idAutor) + 1.0f * nota);
-                    }
-                );
+                if (!vetorLivro.getVetor_autores().isEmpty()) {
+                    somaNotas[1] += nota_normalizada;
+                    vetorLivro.getVetor_autores().forEach(
+                        (int idAutor) -> {
+                            vetor_autores.put(idAutor, (vetor_autores.get(idAutor) + 1.0f * nota_normalizada));
+                        }
+                    );
+                }
 
-                paginas_normalizado += vetorLivro.getPaginas_normalizado() * nota;
-                ano_normalizado += vetorLivro.getAno_normalizado() * nota;
+                if (vetorLivro.getPaginas() != null) {
+                    somaNotas[2] += 1.0f;
+                    paginas += vetorLivro.getPaginas();
+                }
+
+                if (vetorLivro.getAno() != null) {
+                    somaNotas[3] += 1.0f;
+                    ano += vetorLivro.getAno();
+                }
+                
             }
         );
 
         // normalizar gêneros
-        normalizar(vetor_generos, somaNotas);
+        normalizar(vetor_generos, somaNotas[0]);
+        modulo_generos = (vetor_generos.isEmpty()) ? null : moduloGeneros();
 
         // normalizar autores
-        normalizar(vetor_autores, somaNotas);
+        normalizar(vetor_autores, somaNotas[1]);
+        modulo_autores = (vetor_autores.isEmpty()) ? null : moduloAutores();
 
-        paginas_normalizado /= (float) somaNotas;
-        ano_normalizado /= (float) somaNotas;
+
+        if (paginas != 0.0f) paginas /= somaNotas[2];
+        else paginas = null;
+        if (ano != 0.0f) ano /= somaNotas[3];
+        else ano = null;
     }
 
-    private void normalizar(Int2FloatMap mapa, int somaNotas) {
+    private void normalizar(Int2FloatMap mapa, float somaNotas) {
+        if (mapa.isEmpty() || somaNotas == 0.0f){ return; }
         for (Int2FloatMap.Entry entry : mapa.int2FloatEntrySet()) {
             int chave = entry.getIntKey();
             float valor = entry.getFloatValue();
-            mapa.put(chave, valor / (float) somaNotas);
+            mapa.put(chave, valor / somaNotas);
         }
     }
 
@@ -101,11 +129,5 @@ public class VetorUsuario {
         }
         modulo = (float) Math.sqrt( (double) modulo);
         return modulo;
-    }
-    public float moduloPaginas(){
-        return (float) Math.sqrt( (double) paginas_normalizado * paginas_normalizado );
-    }
-    public float moduloAno(){
-        return (float) Math.sqrt( (double) ano_normalizado * ano_normalizado );
     }
 }

@@ -12,13 +12,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import br.sistema_recomendacoes.dto.GeneroRequestDTO;
 import br.sistema_recomendacoes.dto.GeneroResponseDTO;
 import br.sistema_recomendacoes.dto.LivroRequestDTO;
+import br.sistema_recomendacoes.dto.LivroResponseDTO;
 import br.sistema_recomendacoes.exception.ResourceNotFoundException;
 import br.sistema_recomendacoes.mapper.GeneroMapper;
+import br.sistema_recomendacoes.mapper.LivroMapper;
 import br.sistema_recomendacoes.model.Genero;
 import br.sistema_recomendacoes.repository.GeneroRepository;
 import br.sistema_recomendacoes.util.PatchHelper;
@@ -43,14 +46,10 @@ public class GeneroService {
     }
 
     // read all
-    public List<GeneroResponseDTO> findAllDto(int page, int size){
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Genero> generos = generoRepository.findAll(pageable);
-        List<GeneroResponseDTO> responseDTOs = new ArrayList<>();
-        for (Genero genero : generos) {
-            responseDTOs.add(GeneroMapper.toResponseDTO(genero));
-        }
-        return responseDTOs;
+    public Page<GeneroResponseDTO> findAllDto(int page, int size, String sortBy, String direction){
+        Sort sort = (direction.equalsIgnoreCase("desc")) ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return generoRepository.findAll(pageable).map(g -> GeneroMapper.toResponseDTO(g));
     }
 
     // read one
@@ -188,5 +187,13 @@ public class GeneroService {
     
     private Genero findById(Integer id){
         return generoRepository.findById((long) id).orElseThrow( () -> new ResourceNotFoundException("Gênero (id: " + id + ") não encontrado."));
+    }
+
+    @Transactional
+    public List<LivroResponseDTO> getLivros(Integer id){
+        Genero genero = findById(id);
+        return genero.getLivros().stream()
+            .map(l -> LivroMapper.toResponseDTO(l))
+            .toList();
     }
 }

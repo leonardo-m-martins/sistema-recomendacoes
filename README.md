@@ -170,9 +170,12 @@ curl --request POST \
 
 ``` json
 {
-	"usuarioId": "1",
-	"usuarioNome": "Jonas",
-	"token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJMdcOtcyIsImlhdCI6MTc0NjgyNTQyOSwiZXhwIjoxNzQ2OTExODI5fQ.xYrLOk581gTPVzyKEpGMPfbu_nodTONrv3ydIM_KSno"
+	"usuario": {
+		"id": 3,
+		"nome": "José",
+		"email": "jose@gmail.com"
+	},
+	"token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJKb3PDqSIsImlhdCI6MTc0NzE4Nzg5MSwiZXhwIjoxNzQ3Mjc0MjkxfQ.O4gN4nk8D1L_shEb8ixjKATlNI4yJvmr2PZregLzMic"
 }
 ```
 

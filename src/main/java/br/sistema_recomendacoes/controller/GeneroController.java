@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.sistema_recomendacoes.dto.GeneroRequestDTO;
 import br.sistema_recomendacoes.dto.GeneroResponseDTO;
+import br.sistema_recomendacoes.dto.LivroResponseDTO;
 import br.sistema_recomendacoes.service.GeneroService;
 
 @RestController
@@ -38,8 +40,10 @@ public class GeneroController {
 
     // read all
     @GetMapping("/")
-    public @ResponseBody ResponseEntity<List<GeneroResponseDTO>> findAll(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size){
-        return ResponseEntity.ok().body(generoService.findAllDto(page, size));
+    public @ResponseBody ResponseEntity<Page<GeneroResponseDTO>> findAll(@RequestParam(defaultValue = "0") int page, 
+            @RequestParam(defaultValue = "20") int size, @RequestParam(defaultValue = "nome") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction){
+        return ResponseEntity.ok().body(generoService.findAllDto(page, size, sortBy, direction));
     }
 
     // read one
@@ -76,6 +80,11 @@ public class GeneroController {
     public @ResponseBody ResponseEntity<Void> updateNum_livros(){
         generoService.updateNum_livros();
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{id}/livros")
+    public @ResponseBody ResponseEntity<List<LivroResponseDTO>> getLivros(@PathVariable Integer id){
+        throw new UnsupportedOperationException();
     }
 
     
