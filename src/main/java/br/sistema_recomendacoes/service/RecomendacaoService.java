@@ -60,9 +60,10 @@ public class RecomendacaoService {
     private final float PESO_ANO;
 
     private Set<VetorLivro> vetoresLivro;
+    private List<VetorUsuario> vetoresUsuario;
 
     @Autowired
-    public RecomendacaoService(AppProperties appProperties, VetorLivroRepository vetorLivroRepository){
+    public RecomendacaoService(AppProperties appProperties, VetorLivroRepository vetorLivroRepository, VetorUsuarioRepository vetorUsuarioRepository){
         Limits limits = appProperties.getLimits();
         NOTA_DE_CORTE = limits.getNotaDeCorte();
         NOTA_MAX = limits.getNotaMax();
@@ -76,6 +77,7 @@ public class RecomendacaoService {
         PESO_PAGINAS = weights.getPaginas();
 
         vetoresLivro = vetorLivroRepository.findAllSet();
+        vetoresUsuario = vetorUsuarioRepository.findAll();
     }
 
 
@@ -285,24 +287,21 @@ public class RecomendacaoService {
 
     @Transactional
     public List<LivroResponseDTO> recomendarColaborativa(Integer id_usuario, int K){
-
-        // Carregar os vetores de usuários
-        int numUsuarios = usuarioService.count();
-        VetorUsuario[] vetores = readVetoresUsuario();
-        if (vetores.length == 0) throw new UnsupportedOperationException();
+        
+        if (vetoresUsuario.size() == 0) throw new UnsupportedOperationException();
         VetorUsuario vetorUsuario = new VetorUsuario(id_usuario, usuarioService.getHistorico(id_usuario), NOTA_MAX, NOTA_MIN);
 
         // Calcular a similaridade cosseno de cada vetor, salvando em PriorityQueue
         PriorityQueue<Entry> minHeap = new PriorityQueue<>(K, (a, b) -> Float.compare(a.value, b.value));
-        for (int i = 0; i < numUsuarios; i++) {
-            if (vetores[i].getId() == vetorUsuario.getId()) continue;
+        for (VetorUsuario v : vetoresUsuario) {
+            if (v.getId() == vetorUsuario.getId()) continue;
             
-            float sim = similaridade(vetorUsuario, vetores[i]);
+            float sim = similaridade(vetorUsuario, v);
             if (minHeap.size() < K){
-                minHeap.offer(new Entry(sim, i));
+                minHeap.offer(new Entry(sim, v.getId()));
             } else if (sim > minHeap.peek().value) {
                 minHeap.poll();
-                minHeap.offer(new Entry(sim, i));
+                minHeap.offer(new Entry(sim, v.getId()));
             }
         }
 
@@ -311,7 +310,7 @@ public class RecomendacaoService {
         List<Livro> topKLivros = new ArrayList<>(K);
         Set<Integer> historicoSet = avaliacaoService.findLivro_idByUsuario_id(id_usuario);
         while (!minHeap.isEmpty()) {
-            Entry e = minHeap.poll(); 
+            Entry e = minHeap.poll();
             topKUsuarios.add(e.id);
         }
         for (Integer usuario_id : topKUsuarios.reversed()) {
@@ -337,10 +336,6 @@ public class RecomendacaoService {
 
     public Set<VetorLivro> readVetores(){
         return vetorLivroRepository.findAllSet();
-    }
-
-    public VetorUsuario[] readVetoresUsuario(){
-        return vetorUsuarioRepository.findAllArray();
     }
 
     // vetor_livro

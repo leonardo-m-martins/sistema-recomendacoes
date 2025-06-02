@@ -1,6 +1,7 @@
 HELP.md
 .env
 java21.bat
+java21.sh
 *.code-workspace
 
 target/
