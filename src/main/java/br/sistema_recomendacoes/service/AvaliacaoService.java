@@ -4,6 +4,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import br.sistema_recomendacoes.exception.UnauthorizedException;
+import br.sistema_recomendacoes.model.Usuario;
+import br.sistema_recomendacoes.util.UserAuthenticator;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,8 +29,13 @@ public class AvaliacaoService {
         return avaliacaoRepository.calcAverage(livro_id);
     }
 
+    @Transactional
     public AvaliacaoResponseDTO findByLivroAndUsuario(Integer livro_id, Integer usuario_id){
         Avaliacao avaliacao = avaliacaoRepository.findByLivroAndUsuario(livro_id, usuario_id).orElseThrow( () -> new ResourceNotFoundException("Avaliação (livro_id: " + livro_id + ", usuario_id: " + usuario_id + ") não encontrado."));
+
+        Usuario usuario = avaliacao.getUsuario();
+        if (!UserAuthenticator.authenticate(usuario)) throw new UnauthorizedException("Não é permitido ler, alterar ou deletar avaliações de outros usuários.");
+
         return AvaliacaoMapper.toResponseDTO(avaliacao);
     }
 
@@ -52,8 +61,13 @@ public class AvaliacaoService {
         }
     }
 
+    @Transactional
     public AvaliacaoResponseDTO put(Integer id, AvaliacaoRequestDTO requestDTO){
         Avaliacao avaliacaoExistente = findById(id);
+
+        Usuario usuario = avaliacaoExistente.getUsuario();
+        if (!UserAuthenticator.authenticate(usuario)) throw new UnauthorizedException("Não é permitido ler, alterar ou deletar avaliações de outros usuários.");
+
         Avaliacao avaliacaoAtualizada = AvaliacaoMapper.fromRequestDTO(requestDTO);
 
         // garantir que os IDs não são alterados
@@ -66,15 +80,24 @@ public class AvaliacaoService {
         return AvaliacaoMapper.toResponseDTO(salvo);
     }
 
+    @Transactional
     public AvaliacaoResponseDTO patch(Integer id, Map<String, Object> updateMap){
         Avaliacao avaliacao = findById(id);
+
+        Usuario usuario = avaliacao.getUsuario();
+        if (!UserAuthenticator.authenticate(usuario)) throw new UnauthorizedException("Não é permitido ler, alterar ou deletar avaliações de outros usuários.");
+
         PatchHelper.applyPatch(avaliacao, updateMap);
         Avaliacao salvo = avaliacaoRepository.save(avaliacao);
         return AvaliacaoMapper.toResponseDTO(salvo);
     }
 
+    @Transactional
     public void delete(Integer id){
         Avaliacao avaliacao = findById(id);
+        Usuario usuario = avaliacao.getUsuario();
+        if (!UserAuthenticator.authenticate(usuario)) throw new UnauthorizedException("Não é permitido ler, alterar ou deletar avaliações de outros usuários.");
+
         avaliacaoRepository.delete(avaliacao);
     }
 

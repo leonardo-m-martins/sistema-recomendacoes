@@ -16,7 +16,7 @@ import br.sistema_recomendacoes.dto.LivroResponseDTO;
 import br.sistema_recomendacoes.service.RecomendacaoService;
 
 @RestController
-@RequestMapping(path = "/api/recomendacao")
+@RequestMapping(path = "/recomendacao")
 public class RecomendacaoController {
 
     @Autowired

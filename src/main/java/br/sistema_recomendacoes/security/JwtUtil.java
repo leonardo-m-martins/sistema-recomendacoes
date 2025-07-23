@@ -1,5 +1,6 @@
 package br.sistema_recomendacoes.security;
 
+import br.sistema_recomendacoes.model.Role;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
@@ -22,9 +23,10 @@ public class JwtUtil {
         this.secretKey = Keys.hmacShaKeyFor(SECRET.getBytes());
     }
 
-    public String generateToken(String username) {
+    public String generateToken(String username, Role role) {
         return Jwts.builder()
                 .subject(username)
+                .claim("role", role.name())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(secretKey, Jwts.SIG.HS256)

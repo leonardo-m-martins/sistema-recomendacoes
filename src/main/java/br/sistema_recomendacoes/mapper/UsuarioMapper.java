@@ -6,8 +6,7 @@ import br.sistema_recomendacoes.model.Usuario;
 
 public class UsuarioMapper {
     public static Usuario fromRequestDTO(UsuarioRequestDTO dto){
-        Usuario usuario = new Usuario(dto.getNome(), dto.getSenha(), dto.getEmail());
-        return usuario;
+        return new Usuario(dto.getNome(), dto.getSenha(), dto.getEmail(), dto.getRole());
     }
 
     public static UsuarioResponseDTO toResponseDTO(Usuario usuario){

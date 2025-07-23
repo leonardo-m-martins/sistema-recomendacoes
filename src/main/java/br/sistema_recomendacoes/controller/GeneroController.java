@@ -25,7 +25,7 @@ import br.sistema_recomendacoes.dto.LivroResponseDTO;
 import br.sistema_recomendacoes.service.GeneroService;
 
 @RestController
-@RequestMapping(path = "/api/genero")
+@RequestMapping(path = "/genero")
 public class GeneroController {
     
     @Autowired
@@ -82,9 +82,10 @@ public class GeneroController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/{id}/livros")
+    @GetMapping("/livros/{id}")
     public @ResponseBody ResponseEntity<List<LivroResponseDTO>> getLivros(@PathVariable Integer id){
-        throw new UnsupportedOperationException();
+        List<LivroResponseDTO> livroResponseDTOS = generoService.getLivros(id);
+        return ResponseEntity.ok().body(livroResponseDTOS);
     }
 
     

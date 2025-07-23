@@ -4,13 +4,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -26,15 +20,19 @@ public class Usuario {
     private String senha;
     private String email;
 
+    @Enumerated(EnumType.STRING)
+    private Role role;
+
     @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Avaliacao> avaliacaos;
 
     public Usuario(){}
 
-    public Usuario(String nome, String senha, String email){
+    public Usuario(String nome, String senha, String email, Role role){
         this.nome = nome;
         this.senha = senha;
         this.email = email;
+        this.role = role;
     }
 }

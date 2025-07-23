@@ -24,7 +24,7 @@ import br.sistema_recomendacoes.service.AuthService;
 import br.sistema_recomendacoes.service.UsuarioService;
 
 @RestController
-@RequestMapping(path = "/api/")
+@RequestMapping(path = "/")
 public class UsuarioController {
     
     @Autowired
@@ -43,6 +43,12 @@ public class UsuarioController {
     @PostMapping(path = "/auth/login")
     public @ResponseBody ResponseEntity<Map<String, Object>> login(@RequestBody UsuarioRequestDTO requestDTO){
         Map<String, Object> response = authService.login(requestDTO);
+        return ResponseEntity.ok().body(response);
+    }
+
+    @PostMapping(path = "/auth/guest")
+    public @ResponseBody ResponseEntity<Map<String, Object>> guest(){
+        Map<String, Object> response = authService.guest();
         return ResponseEntity.ok().body(response);
     }
 

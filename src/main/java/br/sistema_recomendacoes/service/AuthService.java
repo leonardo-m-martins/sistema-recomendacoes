@@ -2,6 +2,7 @@ package br.sistema_recomendacoes.service;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -40,7 +41,7 @@ public class AuthService {
 
     // login
     public Map<String, Object> login(UsuarioRequestDTO requestDTO){
-        Usuario usuario = null;
+        Usuario usuario;
 
         if (requestDTO.getNome() != null && !requestDTO.getNome().isBlank()) {
             usuario = usuarioRepository.findByNome(requestDTO.getNome());
@@ -56,7 +57,24 @@ public class AuthService {
 
         Map<String, Object> map = new HashMap<>();
         map.put("usuario", UsuarioMapper.toResponseDTO(usuario));
-        map.put("token", jwtUtil.generateToken(usuario.getNome()));
+        map.put("token", jwtUtil.generateToken(usuario.getNome(), usuario.getRole()));
+
+        return map;
+    }
+
+    // guest
+    public Map<String, Object> guest(){
+        String randomUsername = "guest_" + UUID.randomUUID();
+        String randomEmail = randomUsername + "@guest.local";
+        Usuario usuario = new Usuario();
+        usuario.setNome(randomUsername);
+        usuario.setEmail(randomEmail);
+        usuario.setSenha(passwordEncoder.encode(randomUsername));
+        Usuario usuarioSalvo = usuarioRepository.save(usuario);
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("usuario", UsuarioMapper.toResponseDTO(usuarioSalvo));
+        map.put("token", jwtUtil.generateToken(usuarioSalvo.getNome(), usuario.getRole()));
 
         return map;
     }

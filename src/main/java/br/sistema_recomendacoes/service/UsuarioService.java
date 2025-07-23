@@ -5,7 +5,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import br.sistema_recomendacoes.exception.UnauthorizedException;
+import br.sistema_recomendacoes.util.UserAuthenticator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -70,9 +73,11 @@ public class UsuarioService implements UserDetailsService {
     }
 
     @Transactional
-    public Map<Integer, VetorLivro> getHistorico(Integer id_usuario){
+    public Map<Integer, VetorLivro> getHistorico(Integer idUsuario){
+        Usuario usuario = findById(idUsuario);
+        if (!UserAuthenticator.authenticate(usuario)) throw new UnauthorizedException("Não é permitido acessar o histórico de outros usuários.");
         Map<Integer, VetorLivro> historico = new HashMap<>();
-        Iterable<Avaliacao> avaliacaos = avaliacaoService.findByUsuario_id(id_usuario);
+        Iterable<Avaliacao> avaliacaos = avaliacaoService.findByUsuario_id(idUsuario);
         for (Avaliacao avaliacao : avaliacaos) {
             historico.put(avaliacao.getNotaOrPadrao(), new VetorLivro(avaliacao.getLivro()));
         }
@@ -93,6 +98,10 @@ public class UsuarioService implements UserDetailsService {
         if (usuario == null) {
             throw new ResourceNotFoundException("Usuário não encontrado");
         }
-        return new User(usuario.getNome(), usuario.getSenha(), List.of()); // sem roles por enquanto
+        return new User(
+                usuario.getNome(),
+                usuario.getSenha(),
+                List.of(new SimpleGrantedAuthority("ROLE_" + usuario.getRole().name()))
+        );
     }
 }

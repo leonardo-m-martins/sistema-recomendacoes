@@ -1,5 +1,7 @@
 package br.sistema_recomendacoes.util;
 
+import br.sistema_recomendacoes.model.Role;
+
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,6 +46,7 @@ public class PatchHelper {
         CONVERSORS.put(double.class, v -> Double.parseDouble(v.toString()));
         CONVERSORS.put(Boolean.class, v -> Boolean.parseBoolean(v.toString()));
         CONVERSORS.put(boolean.class, v -> Boolean.parseBoolean(v.toString()));
+        CONVERSORS.put(Role.class, v -> Role.valueOf(v.toString()));
     }
 
     private static Object convert(Class<?> tipo, Object value) {

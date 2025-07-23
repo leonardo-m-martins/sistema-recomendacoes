@@ -26,7 +26,7 @@ import br.sistema_recomendacoes.service.LivroService;
 import br.sistema_recomendacoes.util.Cronometro;
 
 @RestController
-@RequestMapping(path = "/api/livro")
+@RequestMapping(path = "/livro")
 public class LivroController {
     
     @Autowired

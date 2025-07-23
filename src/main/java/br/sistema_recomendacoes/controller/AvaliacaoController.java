@@ -21,7 +21,7 @@ import br.sistema_recomendacoes.dto.AvaliacaoResponseDTO;
 import br.sistema_recomendacoes.service.AvaliacaoService;
 
 @RestController
-@RequestMapping(path = "/api/avaliacao")
+@RequestMapping(path = "/avaliacao")
 public class AvaliacaoController {
     
     @Autowired
@@ -57,16 +57,15 @@ public class AvaliacaoController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/livro-media/{id}")
-    public @ResponseBody ResponseEntity<Double> calcAverage(@PathVariable Integer livro_id){
-        Double avaliacaoAverage = avaliacaoService.calcAverageWithQuery(livro_id);
+    @GetMapping("/livro-media/{livroId}")
+    public @ResponseBody ResponseEntity<Double> calcAverage(@PathVariable Integer livroId){
+        Double avaliacaoAverage = avaliacaoService.calcAverageWithQuery(livroId);
         return ResponseEntity.ok().body(avaliacaoAverage);
     }
 
     @GetMapping("/livro-usuario")
-    public @ResponseBody ResponseEntity<AvaliacaoResponseDTO> findByLivroAndUsuario(@RequestParam Integer livro_id, 
-                                                         @RequestParam Integer usuario_id){
-        AvaliacaoResponseDTO salvo = avaliacaoService.findByLivroAndUsuario(livro_id, usuario_id);
+    public @ResponseBody ResponseEntity<AvaliacaoResponseDTO> findByLivroAndUsuario(@RequestParam Integer livroId, @RequestParam Integer usuarioId){
+        AvaliacaoResponseDTO salvo = avaliacaoService.findByLivroAndUsuario(livroId, usuarioId);
         return ResponseEntity.ok().body(salvo);
     }
 }
