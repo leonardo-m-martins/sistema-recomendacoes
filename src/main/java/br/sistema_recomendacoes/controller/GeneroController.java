@@ -1,6 +1,5 @@
 package br.sistema_recomendacoes.controller;
 
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,8 +82,9 @@ public class GeneroController {
     }
 
     @GetMapping("/livros/{id}")
-    public @ResponseBody ResponseEntity<List<LivroResponseDTO>> getLivros(@PathVariable Integer id){
-        List<LivroResponseDTO> livroResponseDTOS = generoService.getLivros(id);
+    public @ResponseBody ResponseEntity<Page<LivroResponseDTO>> getLivros(@PathVariable Integer id, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size,
+                                                                          @RequestParam(defaultValue = "id") String sortBy, @RequestParam(defaultValue = "asc") String direction){
+        Page<LivroResponseDTO> livroResponseDTOS = generoService.getLivros(id, page, size, sortBy, direction);
         return ResponseEntity.ok().body(livroResponseDTOS);
     }
 

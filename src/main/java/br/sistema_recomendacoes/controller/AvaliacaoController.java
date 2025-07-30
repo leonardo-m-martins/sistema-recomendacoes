@@ -2,7 +2,9 @@ package br.sistema_recomendacoes.controller;
 
 import java.util.Map;
 
+import br.sistema_recomendacoes.dto.LivroResponseDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -67,5 +69,14 @@ public class AvaliacaoController {
     public @ResponseBody ResponseEntity<AvaliacaoResponseDTO> findByLivroAndUsuario(@RequestParam Integer livroId, @RequestParam Integer usuarioId){
         AvaliacaoResponseDTO salvo = avaliacaoService.findByLivroAndUsuario(livroId, usuarioId);
         return ResponseEntity.ok().body(salvo);
+    }
+
+//    Encontra os livros com maior soma de notas,
+//    por exemplo: um livro com duas notas 5 tem somaNotas 10, um livro com 9 notas 1 tem somaNotas 9,
+//    o primeiro será o que tem somaNotas maior.
+    @GetMapping("/top-livros")
+    public @ResponseBody ResponseEntity<Page<LivroResponseDTO>> findTopLivros(@RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "20") Integer size){
+        Page<LivroResponseDTO> responseDTOS = avaliacaoService.findTopLivros(page, size);
+        return ResponseEntity.ok().body(responseDTOS);
     }
 }

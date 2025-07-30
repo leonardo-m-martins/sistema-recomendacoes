@@ -6,8 +6,12 @@ import java.util.List;
 import java.util.Map;
 
 import br.sistema_recomendacoes.exception.UnauthorizedException;
+import br.sistema_recomendacoes.model.Livro;
 import br.sistema_recomendacoes.util.UserAuthenticator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -58,14 +62,11 @@ public class UsuarioService implements UserDetailsService {
 
     // histórico
     @Transactional
-    public List<LivroResponseDTO> historico(Integer id){
-        Usuario usuario = findById(id);
-        List<Avaliacao> avaliacaos = usuario.getAvaliacaos();
-        List<LivroResponseDTO> dtos = new ArrayList<>(avaliacaos.size());
-        for (Avaliacao avaliacao : avaliacaos) {
-            dtos.add(LivroMapper.toResponseDTO(avaliacao.getLivro()));
-        }
-        return dtos;
+    public Page<LivroResponseDTO> historico(Integer usuarioId, int page, int size){
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Livro> historicoLivros = usuarioRepository.getHistorico(usuarioId, pageable);
+        return historicoLivros.map(LivroMapper::toResponseDTO);
     }
 
     public Usuario findById(Integer id){

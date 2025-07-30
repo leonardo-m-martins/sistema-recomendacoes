@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import br.sistema_recomendacoes.model.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -70,6 +71,7 @@ public class AuthService {
         usuario.setNome(randomUsername);
         usuario.setEmail(randomEmail);
         usuario.setSenha(passwordEncoder.encode(randomUsername));
+        usuario.setRole(Role.GUEST);
         Usuario usuarioSalvo = usuarioRepository.save(usuario);
 
         Map<String, Object> map = new HashMap<>();

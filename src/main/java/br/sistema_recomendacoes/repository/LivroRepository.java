@@ -18,9 +18,10 @@ public interface LivroRepository extends JpaRepository<Livro, Long> {
     //        OR a.nome LIKE CONCAT('%', :termo, '%')
     //     """, nativeQuery = true)
     @Query(value = """
-        SELECT DISTINCT l.*
+        SELECT l.*
         FROM livro l
-        WHERE MATCH(l.titulo, l.descricao) AGAINST(:termo IN NATURAL LANGUAGE MODE)
+        JOIN _livro_busca lb ON lb.livro_id = l.id
+        WHERE MATCH(lb.titulo, lb.descricao) AGAINST(:termo IN NATURAL LANGUAGE MODE)
         """, nativeQuery = true)
     List<Livro> buscaPorTextoEAutor(@Param("termo") String termo);
 }

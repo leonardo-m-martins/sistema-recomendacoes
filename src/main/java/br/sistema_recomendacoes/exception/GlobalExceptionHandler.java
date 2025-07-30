@@ -38,6 +38,6 @@ public class GlobalExceptionHandler {
         body.put("status", status.value());
         body.put("error", status.getReasonPhrase());
         body.put("message", message);
-        return new ResponseEntity<Object>(body, status);
+        return new ResponseEntity<>(body, status);
     }
 }

@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.function.Function;
 
+import br.sistema_recomendacoes.model.Livro;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -49,7 +50,7 @@ public class GeneroService {
     public Page<GeneroResponseDTO> findAllDto(int page, int size, String sortBy, String direction){
         Sort sort = (direction.equalsIgnoreCase("desc")) ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
         Pageable pageable = PageRequest.of(page, size, sort);
-        return generoRepository.findAll(pageable).map(g -> GeneroMapper.toResponseDTO(g));
+        return generoRepository.findAll(pageable).map(GeneroMapper::toResponseDTO);
     }
 
     // read one
@@ -190,10 +191,11 @@ public class GeneroService {
     }
 
     @Transactional
-    public List<LivroResponseDTO> getLivros(Integer id){
-        Genero genero = findById(id);
-        return genero.getLivros().stream()
-            .map(l -> LivroMapper.toResponseDTO(l))
-            .toList();
+    public Page<LivroResponseDTO> getLivros(Integer generoId, int page, int size, String sortBy, String direction) {
+        Sort sort = (direction.equalsIgnoreCase("desc")) ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Page<Livro> livros = generoRepository.findAllLivrosByGenero(generoId, pageable);
+        return livros.map(LivroMapper::toResponseDTO);
     }
 }

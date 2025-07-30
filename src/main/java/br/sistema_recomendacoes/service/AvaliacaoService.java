@@ -4,11 +4,17 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import br.sistema_recomendacoes.dto.LivroResponseDTO;
 import br.sistema_recomendacoes.exception.UnauthorizedException;
+import br.sistema_recomendacoes.mapper.LivroMapper;
+import br.sistema_recomendacoes.model.TopLivros;
 import br.sistema_recomendacoes.model.Usuario;
 import br.sistema_recomendacoes.util.UserAuthenticator;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import br.sistema_recomendacoes.dto.AvaliacaoRequestDTO;
@@ -107,5 +113,13 @@ public class AvaliacaoService {
 
     public Set<Integer> findLivro_idByUsuario_id(Integer usuario_id){
         return avaliacaoRepository.findLivro_idByUsuario_id(usuario_id);
+    }
+
+    @Transactional
+    public Page<LivroResponseDTO> findTopLivros(int page, int size){
+        Pageable pageable = PageRequest.of(page, size);
+        Page<TopLivros> topLivros = avaliacaoRepository.findTopLivros(pageable);
+
+        return topLivros.map(TopLivros::getLivro).map(LivroMapper::toResponseDTO);
     }
 }

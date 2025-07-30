@@ -40,7 +40,7 @@ public class LivroController {
 
     @GetMapping("/")
     public @ResponseBody ResponseEntity<Page<LivroResponseDTO>> findAll(@RequestParam(defaultValue = "0") int page, 
-            @RequestParam(defaultValue = "20") int size, @RequestParam(defaultValue = "titulo") String sortBy,
+            @RequestParam(defaultValue = "20") int size, @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "asc") String direction){
         Page<LivroResponseDTO> livros = livroService.findAll(page, size, sortBy, direction);
         return ResponseEntity.ok().body(livros);

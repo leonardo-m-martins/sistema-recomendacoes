@@ -1,10 +1,6 @@
 package br.sistema_recomendacoes.service;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.PriorityQueue;
-import java.util.Set;
+import java.util.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -28,7 +24,6 @@ import it.unimi.dsi.fastutil.ints.Int2FloatMap;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
-import br.sistema_recomendacoes.util.Cronometro;
 
 @Service
 public class RecomendacaoService {
@@ -59,8 +54,8 @@ public class RecomendacaoService {
     private final float PESO_PAGINAS;
     private final float PESO_ANO;
 
-    private Set<VetorLivro> vetoresLivro;
-    private List<VetorUsuario> vetoresUsuario;
+    private final Set<VetorLivro> vetoresLivro;
+    private final List<VetorUsuario> vetoresUsuario;
 
     @Autowired
     public RecomendacaoService(AppProperties appProperties, VetorLivroRepository vetorLivroRepository, VetorUsuarioRepository vetorUsuarioRepository){
@@ -79,26 +74,6 @@ public class RecomendacaoService {
         vetoresLivro = vetorLivroRepository.findAllSet();
         vetoresUsuario = vetorUsuarioRepository.findAll();
     }
-
-
-
-    private void debugVetorUsuario(VetorUsuario vetorUsuario){
-        System.out.println("DEBUG USUÁRIO:");
-        System.out.println("PÁGINAS: " + vetorUsuario.getPaginas());
-        System.out.println("ANO: " + vetorUsuario.getAno());
-        System.out.println("VETOR GÊNEROS:");
-        for (Int2FloatMap.Entry entry : vetorUsuario.getVetor_generos().int2FloatEntrySet()) {
-            System.out.println(entry.getIntKey() + ": " + entry.getFloatValue());
-        }
-        System.out.println("VETOR AUTORES:");
-        for (Int2FloatMap.Entry entry : vetorUsuario.getVetor_autores().int2FloatEntrySet()) {
-            System.out.println(entry.getIntKey() + ": " + entry.getFloatValue());
-        }
-        System.out.println("MÓDULO GÊNEROS: " + vetorUsuario.moduloGeneros());
-        System.out.println("MÓDULO AUTORES: " + vetorUsuario.moduloAutores());
-    }
-
-    
 
     /* produto escalar
      * U * V
@@ -248,19 +223,16 @@ public class RecomendacaoService {
     }
 
     @Transactional
-    public List<LivroResponseDTO> recomendar(Integer id_usuario, int K){
+    public List<LivroResponseDTO> recomendarConteudo(Integer idUsuario, int K){
 
-        // Cronometro cronometro = new Cronometro();
-        // cronometro.start();
+        // Obter o histórico, retornar uma lista vazia (status code 204) caso o usuário não tenha histórico.
+        Map<Integer, VetorLivro> historico = usuarioService.getHistorico(idUsuario);
+        if (historico.isEmpty()) return List.of();
 
-        // VetorLivro[] vetores = readVetores();
-
-        VetorUsuario vetorUsuario = new VetorUsuario(id_usuario, usuarioService.getHistorico(id_usuario), NOTA_MAX, NOTA_MIN);
-
-        // debugVetorUsuario(vetorUsuario); //DEBUG
+        VetorUsuario vetorUsuario = new VetorUsuario(idUsuario, historico, NOTA_MAX, NOTA_MIN);
 
         // Calcular a similaridade cosseno de cada um (Ignorar se o usuário já tiver lido o livro)
-        Set<Integer> historicoSet = avaliacaoService.findLivro_idByUsuario_id(id_usuario);
+        Set<Integer> historicoSet = avaliacaoService.findLivro_idByUsuario_id(idUsuario);
         PriorityQueue<Entry> minHeap = new PriorityQueue<>(K, (a, b) -> Float.compare(a.value, b.value));
         for (VetorLivro vetorLivro : vetoresLivro) {
             if (historicoSet.contains(vetorLivro.getId())) continue;
@@ -274,8 +246,6 @@ public class RecomendacaoService {
             }
         }
 
-        // cronometro.stop("Todas operações feitas: ");
-
         // Retornar lista de recomendações ordenada do mais similar ao menos similar
         List<LivroResponseDTO> recomendacoes = new LinkedList<>();
         while (!minHeap.isEmpty()) {
@@ -286,10 +256,14 @@ public class RecomendacaoService {
     }
 
     @Transactional
-    public List<LivroResponseDTO> recomendarColaborativa(Integer id_usuario, int K){
+    public List<LivroResponseDTO> recomendarColaborativa(Integer idUsuario, int K){
         
-        if (vetoresUsuario.size() == 0) throw new UnsupportedOperationException();
-        VetorUsuario vetorUsuario = new VetorUsuario(id_usuario, usuarioService.getHistorico(id_usuario), NOTA_MAX, NOTA_MIN);
+        if (vetoresUsuario.isEmpty()) return List.of(); // Retorna uma lista vazia ao invés de lançar uma exceção, com status code 204 para o frontend
+
+        Map<Integer, VetorLivro> historico = usuarioService.getHistorico(idUsuario);
+        if (historico.isEmpty()) return List.of();
+
+        VetorUsuario vetorUsuario = new VetorUsuario(idUsuario, historico, NOTA_MAX, NOTA_MIN);
 
         // Calcular a similaridade cosseno de cada vetor, salvando em PriorityQueue
         PriorityQueue<Entry> minHeap = new PriorityQueue<>(K, (a, b) -> Float.compare(a.value, b.value));
@@ -308,7 +282,7 @@ public class RecomendacaoService {
         // Extrair os livros (ignorar se o usuário já tiver lido)
         List<Integer> topKUsuarios = new ArrayList<>(K);
         List<Livro> topKLivros = new ArrayList<>(K);
-        Set<Integer> historicoSet = avaliacaoService.findLivro_idByUsuario_id(id_usuario);
+        Set<Integer> historicoSet = avaliacaoService.findLivro_idByUsuario_id(idUsuario);
         while (!minHeap.isEmpty()) {
             Entry e = minHeap.poll();
             topKUsuarios.add(e.id);
@@ -332,10 +306,6 @@ public class RecomendacaoService {
             recomendacoes.add(LivroMapper.toResponseDTO(livro));
         }
         return recomendacoes;
-    }
-
-    public Set<VetorLivro> readVetores(){
-        return vetorLivroRepository.findAllSet();
     }
 
     // vetor_livro

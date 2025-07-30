@@ -14,6 +14,7 @@ import br.sistema_recomendacoes.dto.LivroResponseDTO;
 import br.sistema_recomendacoes.model.Autor;
 import br.sistema_recomendacoes.model.Genero;
 import br.sistema_recomendacoes.model.Livro;
+import org.apache.commons.text.StringEscapeUtils;
 
 public class LivroMapper {
     public static Livro fromRequestDTO(LivroRequestDTO dto) {
@@ -81,32 +82,27 @@ public class LivroMapper {
     public static LivroResponseDTO toResponseDTO(Livro livro) {
         LivroResponseDTO dto = new LivroResponseDTO();
         dto.setId(livro.getId());
-        dto.setTitulo(livro.getTitulo());
-        dto.setDescricao(livro.getDescricao());
+        dto.setTitulo(StringEscapeUtils.unescapeJava(livro.getTitulo()));
+        dto.setDescricao(StringEscapeUtils.unescapeJava(livro.getDescricao()));
         dto.setPrimeira_data_publicacao(livro.getPrimeira_data_publicacao());
         dto.setData_publicacao(livro.getData_publicacao());
-        dto.setSubtitulo(livro.getSubtitulo());
+        dto.setSubtitulo(StringEscapeUtils.unescapeJava(livro.getSubtitulo()));
         dto.setCapa(livro.getCapa());
         dto.setPaginas(livro.getPaginas());
-        dto.setEditora(livro.getEditora());
+        dto.setEditora(StringEscapeUtils.unescapeJava(livro.getEditora()));
 
         List<Genero> livroGeneros = livro.getGeneros();
-        List<GeneroResponseDTO> generosDTO = new ArrayList<>();
-        if (!livroGeneros.isEmpty())
-        for (Genero genero : livroGeneros) {
-            GeneroResponseDTO generoDTO = GeneroMapper.toResponseDTO(genero);
-            generosDTO.add(generoDTO);
-        }
+        List<GeneroResponseDTO> generosDTO = livroGeneros.stream()
+                .map(GeneroMapper::toResponseDTO)
+                .toList();
         dto.setGeneros(generosDTO);
 
         List<Autor> livroAutores = livro.getAutores();
-        List<AutorResponseDTO> autorResponseDTOs = new ArrayList<>();
-        if (!livroAutores.isEmpty())
-        for (Autor autor : livroAutores) {
-            AutorResponseDTO autorResponseDTO = AutorMapper.toResponseDTO(autor);
-            autorResponseDTOs.add(autorResponseDTO);
-        }
+        List<AutorResponseDTO> autorResponseDTOs = livroAutores.stream()
+                .map(AutorMapper::toResponseDTO)
+                .toList();
         dto.setAutores(autorResponseDTOs);
+
         return dto;
     }
 }

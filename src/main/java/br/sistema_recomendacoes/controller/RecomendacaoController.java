@@ -23,13 +23,17 @@ public class RecomendacaoController {
     private RecomendacaoService recomendacaoService;
 
     @GetMapping(path = "/conteudo/{usuario_id}")
-    public @ResponseBody ResponseEntity<List<LivroResponseDTO>> get(@PathVariable Integer usuario_id, @RequestParam(defaultValue = "10") int K){
-        return ResponseEntity.ok().body(recomendacaoService.recomendar(usuario_id, K));
+    public @ResponseBody ResponseEntity<List<LivroResponseDTO>> recomendacaoPorConteudo(@PathVariable Integer usuario_id, @RequestParam(defaultValue = "10") int K){
+        List<LivroResponseDTO> responseDTOS = recomendacaoService.recomendarConteudo(usuario_id, K);
+        if (responseDTOS.isEmpty()) return ResponseEntity.noContent().build();
+        return ResponseEntity.ok().body(responseDTOS);
     }
 
     @GetMapping(path = "/colaborativa/{usuario_id}")
-    public @ResponseBody ResponseEntity<List<LivroResponseDTO>> colaborativa(@PathVariable Integer usuario_id, @RequestParam(defaultValue = "10") int K){
-        return ResponseEntity.ok().body(recomendacaoService.recomendarColaborativa(usuario_id, K));
+    public @ResponseBody ResponseEntity<List<LivroResponseDTO>> recomendacaoColaborativa(@PathVariable Integer usuario_id, @RequestParam(defaultValue = "10") int K){
+        List<LivroResponseDTO> responseDTOS = recomendacaoService.recomendarColaborativa(usuario_id, K);
+        if (responseDTOS.isEmpty()) return ResponseEntity.noContent().build();
+        return ResponseEntity.ok().body(responseDTOS);
     }
 
     @PostMapping(path = "/vetor-livro")

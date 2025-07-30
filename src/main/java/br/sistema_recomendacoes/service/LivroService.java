@@ -70,7 +70,7 @@ public class LivroService {
         Sort sort = (direction.equalsIgnoreCase("desc")) ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
         Pageable pageable = PageRequest.of(page, size, sort);
         Page<Livro> livros = livroRepository.findAll(pageable);
-        return livros.map(l -> LivroMapper.toResponseDTO(l));
+        return livros.map(LivroMapper::toResponseDTO);
     }
 
     // read one
@@ -202,10 +202,6 @@ public class LivroService {
 
     public int count(){
         return (int) livroRepository.count();
-    }
-
-    public List<Livro> findAllList(){
-        return livroRepository.findAll();
     }
 
     public Page<Livro> findAll(Pageable pageable){
