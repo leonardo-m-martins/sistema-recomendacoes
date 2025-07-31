@@ -8,7 +8,16 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import br.sistema_recomendacoes.dto.AutorResponseDTO;
+import br.sistema_recomendacoes.dto.LivroResponseDTO;
+import br.sistema_recomendacoes.exception.ResourceNotFoundException;
+import br.sistema_recomendacoes.mapper.LivroMapper;
+import br.sistema_recomendacoes.model.Livro;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import br.sistema_recomendacoes.dto.AutorRequestDTO;
@@ -28,6 +37,15 @@ public class AutorService {
 
     @Autowired
     private EntityManager entityManager;
+
+    public Autor findById(Integer autorId) {
+        return autorRepository.findById((long) autorId).orElseThrow( () -> new ResourceNotFoundException("Autor (id: " + autorId + ") não encontrado."));
+    }
+
+    public AutorResponseDTO findByIdDto(Integer autorId) {
+        Autor autor = findById(autorId);
+        return AutorMapper.toResponseDTO(autor);
+    }
 
     public List<Autor> searchAndSave(List<Autor> autores) {
         List<Autor> autoresSalvos = new ArrayList<>();
@@ -105,5 +123,14 @@ public class AutorService {
         else{
             throw new RuntimeException();
         }
+    }
+
+    @Transactional
+    public Page<LivroResponseDTO> getLivros(Integer autorId, int page, int size, String sortBy, String direction) {
+        Sort sort = (direction.equalsIgnoreCase("desc")) ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Page<Livro> livros = autorRepository.getLivrosByAutor(autorId, pageable);
+        return livros.map(LivroMapper::toResponseDTO);
     }
 }
