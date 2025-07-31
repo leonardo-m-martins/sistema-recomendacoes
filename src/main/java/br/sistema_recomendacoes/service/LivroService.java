@@ -174,13 +174,12 @@ public class LivroService {
     }    
     
     @Transactional
-    public List<LivroResponseDTO> search(String q){
-        List<Livro> livros = livroRepository.buscaPorTextoEAutor(q);
-        List<LivroResponseDTO> dtos = new ArrayList<>(livros.size());
-        for (Livro livro : livros) {
-            dtos.add(LivroMapper.toResponseDTO(livro));
-        }
-        return dtos;
+    public Page<LivroResponseDTO> search(String q, int page, int size, String sortBy, String direction){
+        Sort sort = (direction.equalsIgnoreCase("desc")) ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Page<Livro> livros = livroRepository.buscaPorTextoEAutor(q, pageable);
+        return livros.map(LivroMapper::toResponseDTO);
     }
 
     private void vectorize(Livro livro){

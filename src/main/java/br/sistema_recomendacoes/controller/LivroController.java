@@ -87,7 +87,9 @@ public class LivroController {
     }
 
     @GetMapping("/search")
-    public @ResponseBody ResponseEntity<List<LivroResponseDTO>> search(@RequestParam(name = "q") String q){
-        return ResponseEntity.ok().body(livroService.search(q));
+    public @ResponseBody ResponseEntity<Page<LivroResponseDTO>> search(@RequestParam(name = "q") String q, @RequestParam(defaultValue = "0") int page,
+                                                                       @RequestParam(defaultValue = "20") int size, @RequestParam(defaultValue = "id") String sortBy,
+                                                                       @RequestParam(defaultValue = "asc") String direction){
+        return ResponseEntity.ok().body(livroService.search(q, page, size, sortBy, direction));
     }
 }
