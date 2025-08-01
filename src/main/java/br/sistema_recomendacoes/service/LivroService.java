@@ -122,9 +122,11 @@ public class LivroService {
     }
 
     // delete
-    public void delete(Integer id){
+    public int delete(Integer id){
         Livro livro = findById(id);
         livroRepository.delete(livro);
+
+        return id;
     }
 
     // adicionar lista

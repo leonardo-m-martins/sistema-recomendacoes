@@ -55,9 +55,11 @@ public class UsuarioService implements UserDetailsService {
     }
 
     // delete
-    public void delete(Integer id){
+    public int delete(Integer id){
         Usuario usuario = findById(id);
         usuarioRepository.delete(usuario);
+
+        return id;
     }
 
     // histórico

@@ -99,12 +99,14 @@ public class AvaliacaoService {
     }
 
     @Transactional
-    public void delete(Integer id){
+    public int delete(Integer id){
         Avaliacao avaliacao = findById(id);
         Usuario usuario = avaliacao.getUsuario();
         if (!UserAuthenticator.authenticate(usuario)) throw new UnauthorizedException("Não é permitido ler, alterar ou deletar avaliações de outros usuários.");
 
         avaliacaoRepository.delete(avaliacao);
+
+        return usuario.getId();
     }
 
     public Iterable<Avaliacao> findByUsuario_id(Integer usuario_id){

@@ -130,4 +130,17 @@ public class VetorUsuario {
         modulo = (float) Math.sqrt( (double) modulo);
         return modulo;
     }
+
+    @Override
+    public boolean equals(Object obj){
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        VetorUsuario other = (VetorUsuario) obj;
+        return this.id == other.id;
+    }
+
+    @Override
+    public int hashCode(){
+        return Integer.hashCode(id);
+    }
 }

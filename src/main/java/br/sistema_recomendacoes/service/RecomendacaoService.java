@@ -55,7 +55,7 @@ public class RecomendacaoService {
     private final float PESO_ANO;
 
     private final Set<VetorLivro> vetoresLivro;
-    private final List<VetorUsuario> vetoresUsuario;
+    private final Set<VetorUsuario> vetoresUsuario;
 
     @Autowired
     public RecomendacaoService(AppProperties appProperties, VetorLivroRepository vetorLivroRepository, VetorUsuarioRepository vetorUsuarioRepository){
@@ -72,7 +72,7 @@ public class RecomendacaoService {
         PESO_PAGINAS = weights.getPaginas();
 
         vetoresLivro = vetorLivroRepository.findAllSet();
-        vetoresUsuario = vetorUsuarioRepository.findAll();
+        vetoresUsuario = vetorUsuarioRepository.findAllSet();
     }
 
     /* produto escalar
@@ -281,7 +281,7 @@ public class RecomendacaoService {
 
         // Extrair os livros (ignorar se o usuário já tiver lido)
         List<Integer> topKUsuarios = new ArrayList<>(K);
-        List<Livro> topKLivros = new ArrayList<>(K);
+        Set<Livro> topKLivros = new LinkedHashSet<>(K);
         Set<Integer> historicoSet = avaliacaoService.findLivro_idByUsuario_id(idUsuario);
         while (!minHeap.isEmpty()) {
             Entry e = minHeap.poll();
@@ -353,5 +353,32 @@ public class RecomendacaoService {
             i++;
         }
         vetorUsuarioRepository.saveAll(List.of(vetores));
+    }
+
+    public void updateVetorUsuario(Integer usuarioId) {
+        VetorUsuario vetorUsuario = new VetorUsuario(usuarioId, usuarioService.getHistorico(usuarioId), NOTA_MAX, NOTA_MIN);
+        vetorUsuarioRepository.save(vetorUsuario);
+        vetoresUsuario.remove(vetorUsuario);
+        vetoresUsuario.add(vetorUsuario);
+    }
+
+    public void updateVetorLivro(int livroId) {
+        Livro livro = livroService.findById(livroId);
+        VetorLivro vetorLivro = new VetorLivro(livro);
+        vetorLivroRepository.save(vetorLivro);
+        vetoresLivro.remove(vetorLivro);
+        vetoresLivro.add(vetorLivro);
+    }
+
+    public void removeVetorLivro(int livroId) {
+        VetorLivro vetorLivro = new VetorLivro();
+        vetorLivro.setId(livroId);
+        vetoresLivro.remove(vetorLivro);
+    }
+
+    public void removeVetorUsuario(int usuarioId) {
+        VetorUsuario vetorUsuario = new VetorUsuario();
+        vetorUsuario.setId(usuarioId);
+        vetoresUsuario.remove(vetorUsuario);
     }
 }
