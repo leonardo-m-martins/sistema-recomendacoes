@@ -1,6 +1,7 @@
 package br.sistema_recomendacoes.model;
 
 import br.sistema_recomendacoes.util.IntSetConverter;
+import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import jakarta.persistence.Convert;
@@ -44,8 +45,8 @@ public class VetorLivro {
      */
     public VetorLivro(Livro livro) {
         id = (int) livro.getId();
-        vetor_generos = new IntOpenHashSet();
-        vetor_autores = new IntOpenHashSet();
+        vetor_generos = new IntArraySet();
+        vetor_autores = new IntArraySet();
 
         for (Genero genero : livro.getGeneros()) {
             vetor_generos.add((int) genero.getId());

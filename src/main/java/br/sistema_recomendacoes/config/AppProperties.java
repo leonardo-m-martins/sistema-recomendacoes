@@ -12,6 +12,7 @@ public class AppProperties {
 
     private Limits limits;
     private Weights weights;
+    private Config config;
 
     @Data
     public static class Limits {
@@ -30,5 +31,10 @@ public class AppProperties {
         private float autores;
         private float paginas;
         private float ano;
+    }
+
+    @Data
+    public static class Config {
+        private String allowedOrigin;
     }
 }

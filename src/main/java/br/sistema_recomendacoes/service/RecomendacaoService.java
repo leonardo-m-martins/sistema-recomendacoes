@@ -58,7 +58,7 @@ public class RecomendacaoService {
     private final Set<VetorUsuario> vetoresUsuario;
 
     @Autowired
-    public RecomendacaoService(AppProperties appProperties, VetorLivroRepository vetorLivroRepository, VetorUsuarioRepository vetorUsuarioRepository){
+    public RecomendacaoService(AppProperties appProperties, VetorLivroRepository vetorLivroRepository, VetorUsuarioRepository vetorUsuarioRepository, EntityManager entityManager){
         Limits limits = appProperties.getLimits();
         NOTA_DE_CORTE = limits.getNotaDeCorte();
         NOTA_MAX = limits.getNotaMax();
@@ -73,6 +73,9 @@ public class RecomendacaoService {
 
         vetoresLivro = vetorLivroRepository.findAllSet();
         vetoresUsuario = vetorUsuarioRepository.findAllSet();
+
+        entityManager.clear();
+        System.gc();
     }
 
     /* produto escalar
@@ -247,12 +250,15 @@ public class RecomendacaoService {
         }
 
         // Retornar lista de recomendações ordenada do mais similar ao menos similar
-        List<LivroResponseDTO> recomendacoes = new LinkedList<>();
+        List<Integer> recomendacoesIds = new LinkedList<>();
         while (!minHeap.isEmpty()) {
             Entry entry = minHeap.poll();
-            recomendacoes.addFirst(LivroMapper.toResponseDTO(livroService.findById(entry.id)));
+            recomendacoesIds.addFirst(entry.id);
         }
-        return recomendacoes;
+        List<Livro> recomendacoes = livroService.findAllByIds(recomendacoesIds);
+        return recomendacoes.stream()
+                .map(LivroMapper::toLazyResponseDTO)
+                .toList();
     }
 
     @Transactional
@@ -301,11 +307,9 @@ public class RecomendacaoService {
         }
 
         // Retornar lista de recomendações
-        List<LivroResponseDTO> recomendacoes = new ArrayList<>();
-        for (Livro livro : topKLivros) {
-            recomendacoes.add(LivroMapper.toResponseDTO(livro));
-        }
-        return recomendacoes;
+        return topKLivros.stream()
+                .map(LivroMapper::toLazyResponseDTO)
+                .toList();
     }
 
     // vetor_livro

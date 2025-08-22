@@ -68,7 +68,7 @@ public class UsuarioService implements UserDetailsService {
         Pageable pageable = PageRequest.of(page, size);
 
         Page<Livro> historicoLivros = usuarioRepository.getHistorico(usuarioId, pageable);
-        return historicoLivros.map(LivroMapper::toResponseDTO);
+        return historicoLivros.map(LivroMapper::toLazyResponseDTO);
     }
 
     public Usuario findById(Integer id){

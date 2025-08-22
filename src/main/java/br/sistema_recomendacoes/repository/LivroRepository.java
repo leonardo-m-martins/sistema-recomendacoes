@@ -25,6 +25,6 @@ public interface LivroRepository extends JpaRepository<Livro, Long> {
             """,
             nativeQuery = true
     )
-    Page<Livro> buscaPorTextoEAutor(@Param("termo") String termo, Pageable pageable);
+    Page<Livro> buscaPorTituloDescricao(@Param("termo") String termo, Pageable pageable);
 }
 

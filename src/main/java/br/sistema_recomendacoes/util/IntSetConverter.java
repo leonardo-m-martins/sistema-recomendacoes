@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import jakarta.persistence.AttributeConverter;
@@ -13,9 +14,9 @@ import jakarta.persistence.Converter;
 
 @Converter
 public class IntSetConverter implements AttributeConverter<IntSet, byte[]> {
-    
+
     @Override
-    public byte[] convertToDatabaseColumn(IntSet set){
+    public byte[] convertToDatabaseColumn(IntSet set) {
         if (set == null) return null;
 
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -33,7 +34,8 @@ public class IntSetConverter implements AttributeConverter<IntSet, byte[]> {
         try (ByteArrayInputStream bis = new ByteArrayInputStream(dbData);
              ObjectInputStream ois = new ObjectInputStream(bis)){
             int[] arr = (int[]) ois.readObject();
-            return new IntOpenHashSet(arr);
+//            return new IntOpenHashSet(arr);
+            return new IntArraySet(arr);
         } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException("Erro ao desserializar IntSet", e);
         }

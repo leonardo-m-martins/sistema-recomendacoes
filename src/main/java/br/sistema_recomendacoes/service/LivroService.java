@@ -70,7 +70,7 @@ public class LivroService {
         Sort sort = (direction.equalsIgnoreCase("desc")) ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
         Pageable pageable = PageRequest.of(page, size, sort);
         Page<Livro> livros = livroRepository.findAll(pageable);
-        return livros.map(LivroMapper::toResponseDTO);
+        return livros.map(LivroMapper::toLazyResponseDTO);
     }
 
     // read one
@@ -180,8 +180,8 @@ public class LivroService {
         Sort sort = (direction.equalsIgnoreCase("desc")) ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Page<Livro> livros = livroRepository.buscaPorTextoEAutor(q, pageable);
-        return livros.map(LivroMapper::toResponseDTO);
+        Page<Livro> livros = livroRepository.buscaPorTituloDescricao(q, pageable);
+        return livros.map(LivroMapper::toLazyResponseDTO);
     }
 
     private void vectorize(Livro livro){
@@ -203,6 +203,13 @@ public class LivroService {
 
     public int count(){
         return (int) livroRepository.count();
+    }
+
+    public List<Livro> findAllByIds(List<Integer> ids){
+        List<Long> longIds = ids.stream()
+                .map(Integer::longValue)
+                .toList();
+        return livroRepository.findAllById(longIds);
     }
 
     public Page<Livro> findAll(Pageable pageable){

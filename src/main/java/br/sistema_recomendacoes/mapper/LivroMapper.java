@@ -81,15 +81,7 @@ public class LivroMapper {
 
     public static LivroResponseDTO toResponseDTO(Livro livro) {
         LivroResponseDTO dto = new LivroResponseDTO();
-        dto.setId(livro.getId());
-        dto.setTitulo(StringEscapeUtils.unescapeJava(livro.getTitulo()));
-        dto.setDescricao(StringEscapeUtils.unescapeJava(livro.getDescricao()));
-        dto.setPrimeira_data_publicacao(livro.getPrimeira_data_publicacao());
-        dto.setData_publicacao(livro.getData_publicacao());
-        dto.setSubtitulo(StringEscapeUtils.unescapeJava(livro.getSubtitulo()));
-        dto.setCapa(livro.getCapa());
-        dto.setPaginas(livro.getPaginas());
-        dto.setEditora(StringEscapeUtils.unescapeJava(livro.getEditora()));
+        dtoSetAttributes(dto, livro);
 
         List<Genero> livroGeneros = livro.getGeneros();
         List<GeneroResponseDTO> generosDTO = livroGeneros.stream()
@@ -104,5 +96,24 @@ public class LivroMapper {
         dto.setAutores(autorResponseDTOs);
 
         return dto;
+    }
+
+    public static LivroResponseDTO toLazyResponseDTO(Livro livro) {
+        LivroResponseDTO dto = new LivroResponseDTO();
+        dtoSetAttributes(dto, livro);
+
+        return dto;
+    }
+
+    private static void dtoSetAttributes(LivroResponseDTO dto, Livro livro) {
+        dto.setId(livro.getId());
+        dto.setTitulo(StringEscapeUtils.unescapeJava(livro.getTitulo()));
+        dto.setDescricao(StringEscapeUtils.unescapeJava(livro.getDescricao()));
+        dto.setPrimeira_data_publicacao(livro.getPrimeira_data_publicacao());
+        dto.setData_publicacao(livro.getData_publicacao());
+        dto.setSubtitulo(StringEscapeUtils.unescapeJava(livro.getSubtitulo()));
+        dto.setCapa(livro.getCapa());
+        dto.setPaginas(livro.getPaginas());
+        dto.setEditora(StringEscapeUtils.unescapeJava(livro.getEditora()));
     }
 }

@@ -196,6 +196,6 @@ public class GeneroService {
         Pageable pageable = PageRequest.of(page, size, sort);
 
         Page<Livro> livros = generoRepository.findAllLivrosByGenero(generoId, pageable);
-        return livros.map(LivroMapper::toResponseDTO);
+        return livros.map(LivroMapper::toLazyResponseDTO);
     }
 }

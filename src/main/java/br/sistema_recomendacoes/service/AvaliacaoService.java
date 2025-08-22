@@ -122,6 +122,6 @@ public class AvaliacaoService {
         Pageable pageable = PageRequest.of(page, size);
         Page<TopLivros> topLivros = avaliacaoRepository.findTopLivros(pageable);
 
-        return topLivros.map(TopLivros::getLivro).map(LivroMapper::toResponseDTO);
+        return topLivros.map(TopLivros::getLivro).map(LivroMapper::toLazyResponseDTO);
     }
 }

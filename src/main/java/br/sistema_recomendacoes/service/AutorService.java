@@ -131,6 +131,6 @@ public class AutorService {
         Pageable pageable = PageRequest.of(page, size, sort);
 
         Page<Livro> livros = autorRepository.getLivrosByAutor(autorId, pageable);
-        return livros.map(LivroMapper::toResponseDTO);
+        return livros.map(LivroMapper::toLazyResponseDTO);
     }
 }
