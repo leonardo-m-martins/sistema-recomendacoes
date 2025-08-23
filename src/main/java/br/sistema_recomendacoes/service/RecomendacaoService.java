@@ -3,6 +3,8 @@ package br.sistema_recomendacoes.service;
 import java.util.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -226,6 +228,7 @@ public class RecomendacaoService {
     }
 
     @Transactional
+    @Cacheable(value = "recomendacaoConteudo", key = "#idUsuario")
     public List<LivroResponseDTO> recomendarConteudo(Integer idUsuario, int K){
 
         // Obter o histórico, retornar uma lista vazia (status code 204) caso o usuário não tenha histórico.
@@ -262,6 +265,7 @@ public class RecomendacaoService {
     }
 
     @Transactional
+    @Cacheable(value = "recomendacaoColaborativa", key = "#idUsuario")
     public List<LivroResponseDTO> recomendarColaborativa(Integer idUsuario, int K){
         
         if (vetoresUsuario.isEmpty()) return List.of(); // Retorna uma lista vazia ao invés de lançar uma exceção, com status code 204 para o frontend
@@ -359,8 +363,9 @@ public class RecomendacaoService {
         vetorUsuarioRepository.saveAll(List.of(vetores));
     }
 
-    public void updateVetorUsuario(Integer usuarioId) {
-        VetorUsuario vetorUsuario = new VetorUsuario(usuarioId, usuarioService.getHistorico(usuarioId), NOTA_MAX, NOTA_MIN);
+    @CacheEvict(value = {"recomendacaoConteudo", "recomendacaoColaborativa"}, key = "#idUsuario")
+    public void updateVetorUsuario(Integer idUsuario) {
+        VetorUsuario vetorUsuario = new VetorUsuario(idUsuario, usuarioService.getHistorico(idUsuario), NOTA_MAX, NOTA_MIN);
         vetorUsuarioRepository.save(vetorUsuario);
         vetoresUsuario.remove(vetorUsuario);
         vetoresUsuario.add(vetorUsuario);
