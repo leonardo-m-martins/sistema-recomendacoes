@@ -18,7 +18,6 @@ public class TestcontainersBase {
                 .asCompatibleSubstituteFor("mysql:8.0")
         )
             .withStartupTimeout(Duration.ofMinutes(5))
-            .withExposedPorts(3306)
             .withDatabaseName("sistema_recomendacoes")
             .withUsername("root")
             .withPassword("root");
