@@ -1,10 +1,12 @@
 package br.sistema_recomendacoes.controller;
 
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import br.sistema_recomendacoes.dto.LivroResponseDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -77,6 +79,9 @@ public class AvaliacaoController {
     @GetMapping("/top-livros")
     public @ResponseBody ResponseEntity<Page<LivroResponseDTO>> findTopLivros(@RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "20") Integer size){
         Page<LivroResponseDTO> responseDTOS = avaliacaoService.findTopLivros(page, size);
-        return ResponseEntity.ok().body(responseDTOS);
+        return ResponseEntity
+                .ok()
+                .cacheControl(CacheControl.maxAge(14, TimeUnit.DAYS).cachePublic())
+                .body(responseDTOS);
     }
 }

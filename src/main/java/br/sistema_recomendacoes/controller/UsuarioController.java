@@ -3,6 +3,7 @@ package br.sistema_recomendacoes.controller;
 import java.util.List;
 import java.util.Map;
 
+import br.sistema_recomendacoes.model.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -28,6 +29,7 @@ public class UsuarioController {
     // POST: Novo usuario
     @PostMapping(path = "/auth/cadastrar")
     public @ResponseBody ResponseEntity<UsuarioResponseDTO> add(@RequestBody UsuarioRequestDTO usuario) {
+        usuario.setRole(Role.USER);
         UsuarioResponseDTO salvo = authService.add(usuario);
         return ResponseEntity.status(HttpStatus.CREATED).body(salvo);
     }
