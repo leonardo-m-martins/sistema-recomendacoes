@@ -1,9 +1,11 @@
 package br.sistema_recomendacoes.controller;
 
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -85,7 +87,10 @@ public class GeneroController {
     public @ResponseBody ResponseEntity<Page<LivroResponseDTO>> getLivros(@PathVariable Integer id, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size,
                                                                           @RequestParam(defaultValue = "id") String sortBy, @RequestParam(defaultValue = "asc") String direction){
         Page<LivroResponseDTO> livroResponseDTOS = generoService.getLivros(id, page, size, sortBy, direction);
-        return ResponseEntity.ok().body(livroResponseDTOS);
+        return ResponseEntity
+                .ok()
+                .cacheControl(CacheControl.maxAge(10, TimeUnit.MINUTES).cachePublic())
+                .body(livroResponseDTOS);
     }
 
     

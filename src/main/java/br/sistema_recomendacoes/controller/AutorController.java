@@ -5,8 +5,11 @@ import br.sistema_recomendacoes.dto.LivroResponseDTO;
 import br.sistema_recomendacoes.service.AutorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/autor")
@@ -29,6 +32,9 @@ public class AutorController {
                                                                     @RequestParam(defaultValue = "id") String sortBy, @RequestParam(defaultValue = "asc") String direction) {
         Page<LivroResponseDTO> responseDTOS = autorService.getLivros(id, page, size, sortBy, direction);
 
-        return ResponseEntity.ok().body(responseDTOS);
+        return ResponseEntity
+                .ok()
+                .cacheControl(CacheControl.maxAge(10, TimeUnit.MINUTES).cachePublic())
+                .body(responseDTOS);
     }
 }
