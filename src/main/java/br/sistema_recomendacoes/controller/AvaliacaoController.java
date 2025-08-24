@@ -67,6 +67,7 @@ public class AvaliacaoController {
         return ResponseEntity.ok().body(avaliacaoAverage);
     }
 
+//    Endpoint principal usado para retornar avaliações no frontend
     @GetMapping("/livro-usuario")
     public @ResponseBody ResponseEntity<AvaliacaoResponseDTO> findByLivroAndUsuario(@RequestParam Integer livroId, @RequestParam Integer usuarioId){
         AvaliacaoResponseDTO salvo = avaliacaoService.findByLivroAndUsuario(livroId, usuarioId);
